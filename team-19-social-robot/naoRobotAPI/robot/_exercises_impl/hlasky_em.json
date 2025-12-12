@@ -1,0 +1,363 @@
+{
+  "start": {
+    "Happiness": [
+      {
+        "male": null,
+        "female": null,
+        "neutral": null,
+        "non_verbal": true,
+        "func": "motion_happiness_start"
+      },
+      {
+        "male": null,
+        "female": null,
+        "neutral": "Ahoj, vidím, že sa už nevieš dočkať dnešného tréningu.",
+        "non_verbal": false,
+        "func": ""
+      },
+      {
+        "male": null,
+        "female": null,
+        "neutral": "Vitaj, čo ťa tak potešilo?  Verím, že aj naše dnešné cvičnie ti spraví radosť.",
+        "non_verbal": false,
+        "func": ""
+      }
+    ],
+    "Sadness": [
+      {
+        "male": "Vidím, že si dnes smutný. Zacvičme si spolu, verím, že ti to zdvihne náladu.",
+        "female": "Vidím, že si dnes smutná. Zacvičme si spolu, verím, že ti to zdvihne náladu.",
+        "neutral": null,
+        "non_verbal": false,
+        "func": ""
+      },
+      {
+        "male": null,
+        "female": null,
+        "neutral": "Ahoj, niečo ťa zarmútilo? Nevadí, zacvičme si spolu a po tréningu mi o tom môžeš porozprávať.",
+        "non_verbal": false,
+        "func": ""
+      }
+    ],
+    "Surprise": [
+      {
+        "male": null,
+        "female": null,
+        "neutral": null,
+        "non_verbal": true,
+        "func": "motion_surprise_start"
+      },
+      {
+        "male": "Vitaj, viem, že si čakal iného trénera, ale aj ja som dobrý. Uvidíš. ",
+        "female": "Vitaj, viem, že si čakala iného trénera, ale aj ja som dobrý. Uvidíš. ",
+        "neutral": null,
+        "non_verbal": false,
+        "func": ""
+      }
+    ],
+    "Fear": [
+      {
+        "male": null,
+        "female": null,
+        "neutral": "Máš z dnešného cvičenia obavy? Neboj sa, nebude to ťažké. Ak sa necítiš dobre, skús si skontrolovať tlak a glykémiu. Ak je všetko v norme, poďme na to!",
+        "non_verbal": false,
+        "func": ""
+      },
+      {
+        "male": null,
+        "female": null,
+
+        "neutral": "Ahoj, neboj sa tento tréning s mojím vedením hravo zvládneš. ",
+        "non_verbal": false,
+        "func": ""
+      }
+    ],
+    "Disgust": [
+      {
+        "male": null,
+        "female": null,
+        "neutral": "Netvár sa tak znechutene! Neviem, či je to kvôli mne, alebo sa ti len nechce cvičiť. Uvidíš, že to bude zábava.",
+        "non_verbal": false,
+        "func": ""
+      },
+      {
+        "male": null,
+        "female": null,
+        "neutral": "Ahoj, naozaj ťa nechcem nútiť do cvičenia so mnou, ale nikto lepší tu teraz aj tak nie je.",
+        "non_verbal": false,
+        "func": ""
+      }
+    ],
+    "Anger": [
+      {
+        "male": null,
+        "female": null,
+        "neutral": null,
+        "non_verbal": true,
+        "func": "motion_anger_start"
+      },
+      {
+        "male": null,
+        "female": null,
+        "neutral": "Ahoj, zdá sa, že niečo nevyšlo podľa tvojich predstáv. Tak poďme hneď cvičiť, nech na to zabudneš. ",
+        "non_verbal": false,
+        "func": ""
+      }
+    ],
+    "Neutral": [
+      {
+        "male": null,
+        "female": null,
+        "neutral": "Ahoj, som rád, že sa opäť vidíme pri cvičení. Ako sa máš?",
+        "non_verbal": true,
+        "func": "reaction_neutral_start"
+      },
+      {
+        "male": null,
+        "female": null,
+        "neutral": "Ahoj, tak poďme hneď na to. ",
+        "non_verbal": false,
+        "func": ""
+      },
+      {
+        "male": null,
+        "female": null,
+        "neutral": " Vitaj na dnešnom tréningu. Dúfam, že sa máš dobre a môžeme sa do toho hneď aj pustiť.",
+        "non_verbal": false,
+        "func": ""
+      }
+     
+    ]
+  },
+
+  "exercise": {
+    "Happiness": [
+      {
+        "male": null,
+        "female": null,
+        "neutral": "Super, vidím radosť, takže sa ti už z cvičenia tvoria endorfíny!",
+        "non_verbal": false,
+        "func": ""
+      },
+      {
+        "male": null,
+        "female": null,
+        "neutral": "Paráda, s tým úsmevom pri cvičení vyzeráš veľmi dobre.)",
+        "non_verbal": false,
+        "func": ""
+      },
+      {
+        "male": null,
+        "female": null,
+        "neutral": "Teší ma, že sa ti cvičenie so mnou páči.)",
+        "non_verbal": false,
+        "func": ""
+      }
+      
+    ],
+    "Sadness": [
+      {
+        "male": "Nebuď smutný, ide ti to skvele!",
+        "female": "Nebuď smutná, ide ti to skvele!",
+        "neutral": null,
+        "non_verbal": false,
+        "func": ""
+      },
+      {
+        "male": "Zdá sa mi to, alebo si zosmutnel? ",
+        "female": "Zdá sa mi to, alebo si zosmutnela? ",
+        "neutral":null,
+        "non_verbal": false,
+        "func": ""
+      }
+    ],
+    "Surprise": [
+      {
+        "male": null,
+        "female": null,
+        "neutral": "Prekvapil ťa cvik, alebo ako dobre nám to spolu ide?",
+        "non_verbal": false,
+        "func": ""
+      },
+      {
+        "male": null,
+        "female": null,
+        "neutral": "Tiež si ma prekvapil ako ti to dobre ide. Teším sa z toho!",
+        "non_verbal": false,
+        "func": ""
+      }
+    ],
+    "Fear": [
+      {
+        "male": null,
+        "female": null,
+        "neutral": "Ak sa necítiš dobre, vydýchaj sa a oddýchni si.",
+        "non_verbal": false,
+        "func": ""
+      },
+      {
+        "male": null,
+        "female": null,
+        "neutral": "No tak, nie je čoho sa obávať, všetky cviky sú vybrané tak, aby boli bezpečné a súčasne efektívne budovali kondíciu. ",
+        "non_verbal": false,
+        "func": ""
+      }
+    ],
+    "Disgust": [
+      {
+        "male": null,
+        "female": null,
+        "neutral": "Zdá sa, že tento cvik sa ti veľmi nepáči. Ale aj také musíme mať.",
+        "non_verbal": false,
+        "func": ""
+      },
+      {
+        "male": null,
+        "female": null,
+        "neutral": "Ak sa necítiš dobre, vydýchaj sa a oddýchni si.",
+        "non_verbal": false,
+        "func": ""
+      }
+    ],
+    "Anger": [
+      {
+        "male": null,
+        "female": null,
+        "neutral": "Ale no tak, nehnevaj sa! Spolu to zvládneme a zajtra ti to pôjde ešte lepšie.",
+        "non_verbal": false,
+        "func": ""
+      },
+      {
+        "male": null,
+        "female": null,
+        "neutral": "Skús sa viac sústrediť na samotné cvičenie, nebudeš myslieť na to, čo ťa nahnevalo.",
+        "non_verbal": false,
+        "func": ""
+      }
+    ],
+    "Neutral": [
+      {
+        "male": null,
+        "female": null,
+        "neutral": "Skvelé, ide Ti to fajn, pokračuj!",
+        "non_verbal": false,
+        "func": ""
+      },
+      {
+        "male": null,
+        "female": null,
+        "neutral": "Skvelé, zaber a sústreď sa na cvičenie.",
+        "non_verbal": false,
+        "func": ""
+      }
+    ]
+  },
+
+  "end": {
+    "Happiness": [
+      {
+        "male": null,
+        "female": null,
+        "neutral": "Paráda, tľapnime si na to!",
+        "non_verbal": true,
+        "func": "motion_happiness_end"
+      }
+    ],
+    "Sadness": [
+      {
+        "male": null,
+        "female": null,
+        "neutral": "Tak a máš to za sebou, skús si to užiť.",
+        "non_verbal": false,
+        "func": ""
+      },
+      {
+        "male": null,
+        "female": null,
+        "neutral": " Tak a hotovo. Verím, že sa pri ďalšom tréningu stretneme a budes mať veselšiu náladu. ",
+        "non_verbal": false,
+        "func": ""
+      }
+    ],
+    "Surprise": [
+      {
+        "male": null,
+        "female": null,
+        "neutral": "Veru, už je koniec. Teším sa na ďalší tréning s tebou.",
+        "non_verbal": false,
+        "func": ""
+      },
+      {
+        "male": null,
+        "female": null,
+        "neutral": "Tváriš sa, akoby ťa niečo prekvapilo. Dúfam,že pozitívne a že sa uvidíme opäť. ",
+        "non_verbal": false,
+        "func": ""
+      }
+    ],
+    "Fear": [
+      {
+        "male": null,
+        "female": null,
+        "neutral": "Výborne, aj napriek obavám sme to spolu zvládli.",
+        "non_verbal": false,
+        "func": ""
+      },
+      {
+        "male": null,
+        "female": null,
+        "neutral": "Vravel som ti, že to spolu zvládneme. Prajem ti pekný deň a teśím sa na náš ďalší spoločný tréning.  ",
+        "non_verbal": false,
+        "func": ""
+      }
+    ],
+    "Disgust": [
+      {
+        "male": null,
+        "female": null,
+        "neutral": "Naozaj sa ti cvičenie so mnou až tak nepáčilo? Skús si teda zohnať živého trénera.",
+        "non_verbal": false,
+        "func": ""
+      },
+      {
+        "male": null,
+        "female": null,
+        "neutral": "Bude lepšie, ak si dáme ďalší tréning až budúci týždeň. ",
+        "non_verbal": false,
+        "func": ""
+      }
+    ],
+    "Anger": [
+      {
+        "male": null,
+        "female": null,
+        "neutral": "Hotovo, už sa toľko nehnevaj, pozri ako sme to spolu nakoniec pekne odcvičili.",
+        "non_verbal": false,
+        "func": ""
+      },
+      {
+        "male": null,
+        "female": null,
+        "neutral": "Snažil som sa, no náladu som ti nezlepšil. Tak sa ešte prejdi na vzduchu a my sa vidíme pri ďalšom cvičení. ",
+        "non_verbal": false,
+        "func": ""
+      }
+    ],
+    "Neutral": [
+      {
+        "male": null,
+        "female": null,
+        "neutral": "Paráda, tľapnime si na to!",
+        "non_verbal": true,
+        "func": "motion_happiness_end"
+      },
+      {
+        "male": null,
+        "female": null,
+        "neutral": "Uf, išlo nám to vážne super. Rozhodne si zaslúžiš pochvalu! Ťeším sa na ďalšie stretnutie. ",
+        "non_verbal": false,
+        "func": ""
+      }
+    ]
+  }
+}

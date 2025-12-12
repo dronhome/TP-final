@@ -1,0 +1,14 @@
+[
+  {
+    "environment": null, 
+    "name": "test_foo", 
+    "cmd": [
+      "/robotics/naoRobotAPI/testQiBuild/foo/build-sys-linux-x86_64/sdk/bin/test_foo"
+    ], 
+    "nightly": false, 
+    "gtest": false, 
+    "working_directory": null, 
+    "timeout": 20, 
+    "perf": false
+  }
+]

@@ -1,0 +1,7 @@
+https://github.com/RizwanMunawar/yolov7-pose-estimation/tree/main
+
+Code to map pose - pose only
+https://github.com/Ahmed-AI-01/Nao_Mimc
+
+Original pose article with rotations
+https://github.com/chrisyrniu/whole_body_imitation_and_lfd

@@ -1,0 +1,1 @@
+--name;test_foo;--timeout;20;--;/robotics/naoRobotAPI/testQiBuild/foo/build-sys-linux-x86_64/sdk/bin/test_foo
