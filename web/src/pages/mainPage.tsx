@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 
 export default function MainPage() {
   const [file, setFile] = useState<File | null>(null);
+  console.log(file);
 
   const handleFileUpload = (files: File[]) => {
     if (files.length > 0) {

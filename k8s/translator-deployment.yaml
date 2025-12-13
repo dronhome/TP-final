@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: translator-deployment
+  labels:
+    app: translator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: translator
+  template:
+    metadata:
+      labels:
+        app: translator
+    spec:
+      volumes:
+        - name: pictures
+          hostPath:
+            path: /home/ubuntu/Pictures
+            type: DirectoryOrCreate
+      containers:
+        - name: translator
+          volumeMounts:
+            - name: pictures
+              mountPath: /home/ubuntu/Pictures
+          image: berserkchmonya/translator:latest
+          imagePullPolicy: Always
+          ports:
+          - containerPort: 7000
+          readinessProbe:
+            httpGet:
+              path: /test
+              port: 7000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /test
+              port: 7000
+            initialDelaySeconds: 30
+            periodSeconds: 30
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: translator-service
+spec:
+  selector:
+    app: translator
+  type: NodePort
+  ports:
+    - port: 7000
+      targetPort: 7000
+      nodePort: 30005

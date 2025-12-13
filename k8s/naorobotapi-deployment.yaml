@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: naorobotapi-deployment
+  labels:
+    app: naorobotapi
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: naorobotapi
+  template:
+    metadata:
+      labels:
+        app: naorobotapi
+    spec:
+      containers:
+      - name: naorobotapi
+        image: berserkchmonya/nao-robot-api:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 5000
+        volumeMounts:
+        - name: pictures
+          mountPath: /images
+        env:
+        - name: FLASK_ENV
+          value: "production"
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 5000
+          initialDelaySeconds: 20
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 5000
+          initialDelaySeconds: 40
+          periodSeconds: 30
+      volumes:
+      - name: pictures
+        hostPath:
+          path: /home/ubuntu/Pictures
+          type: DirectoryOrCreate
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: naorobotapi-service
+spec:
+  selector:
+    app: naorobotapi
+  type: NodePort
+  ports:
+    - port: 5000
+      targetPort: 5000
+      nodePort: 30003

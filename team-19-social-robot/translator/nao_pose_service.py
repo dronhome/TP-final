@@ -22,8 +22,8 @@ from video_pose_processor import process_video_bytes
 # CONFIG
 # =========================
 
-POSE_API_URL = "http://skeletonFinderAPI:6001/media_pipe_pose/pose_from_image"
-SET_POSE_URL = "http://naoRobotAPI:5000/setting_pose/setPose"
+POSE_API_URL = "http://skeletonfinderapi:6001/media_pipe_pose/pose_from_image"
+SET_POSE_URL = "http://naorobotapi:5000/setting_pose/setPose"
 
 # Host directory mounted into pose container as /images
 POSE_HOST_ROOT = "/home/ubuntu/Pictures"      # host/VM path
@@ -88,6 +88,10 @@ def call_nao_set_pose(angles):
 # =========================
 # ROUTES
 # =========================
+
+@app.route("/test", methods=["GET"])
+def test():
+    return "NAO Pose Service is running."
 
 @app.route("/arms/from_image", methods=["POST"])
 def arms_from_image():
@@ -308,4 +312,4 @@ def arms_from_video():
 # =========================
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=7000, debug=True)
+    app.run(host="0.0.0.0", port=7000, debug=False)

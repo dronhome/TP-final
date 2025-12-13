@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: skeletonfinderapi-deployment
+  labels:
+    app: skeletonfinderapi
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: skeletonfinderapi
+  template:
+    metadata:
+      labels:
+        app: skeletonfinderapi
+    spec:
+      containers:
+      - name: skeletonfinderapi
+        image: berserkchmonya/skeleton-finder-api:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 6001
+        volumeMounts:
+        - name: pictures
+          mountPath: /images
+        env:
+        - name: FLASK_ENV
+          value: "production"
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 6001
+          initialDelaySeconds: 20
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 6001
+          initialDelaySeconds: 40
+          periodSeconds: 30
+      volumes:
+      - name: pictures
+        hostPath:
+          path: /home/ubuntu/Pictures
+          type: DirectoryOrCreate
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: skeletonfinderapi-service
+spec:
+  selector:
+    app: skeletonfinderapi
+  type: NodePort
+  ports:
+    - port: 6001
+      targetPort: 6001
+      nodePort: 30004

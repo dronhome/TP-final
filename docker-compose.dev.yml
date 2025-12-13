@@ -1,0 +1,94 @@
+version: "3.8"
+
+services:
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    image: ${REGISTRY:-berserkchmonya}/web:${TAG:-latest}
+    container_name: web_dev
+    ports:
+      - "8080:80"
+    networks:
+      - appnet
+    depends_on:
+      - naorobotapi
+      - skeletonfinderapi
+      - translatorapi
+
+  team19-web:
+    build:
+      context: ./team-19-web
+      dockerfile: Dockerfile
+    image: ${REGISTRY:-berserkchmonya}/team19-web:${TAG:-latest}
+    container_name: team19_web_dev
+    ports:
+      - "3000:3000"
+    networks:
+      - appnet
+    depends_on:
+      - naorobotapi
+      - skeletonfinderapi
+      - translatorapi
+
+  naorobotapi:
+    build:
+      context: ./team-19-social-robot/naoRobotAPI
+      dockerfile: Dockerfile
+    image: ${REGISTRY:-berserkchmonya}/nao-robot-api:${TAG:-latest}
+    command: python server.py
+    container_name: naorobotapi
+    env_file: ./team-19-social-robot/.env
+    ports:
+      - "5000:5000"
+    environment:
+      HOST_PORT: ${HOST_PORT:-1234}
+      HOST_IP: ${HOST_IP:-127.0.0.1}
+      NAO_PORT: ${NAO_PORT:-9559}
+      NAO_IP: 10.62.44.100
+      FLASK_ENV: development
+    networks:
+      - appnet
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  skeletonfinderapi:
+    build:
+      context: ./team-19-social-robot/skeletonFinderAPI
+      dockerfile: Dockerfile
+    image: ${REGISTRY:-berserkchmonya}/skeleton-finder-api:${TAG:-latest}
+    command: python server.py
+    container_name: skeletonfinderapi
+    env_file: ./team-19-social-robot/.env
+    ports:
+      - "6001:6001"
+    environment:
+      FLASK_ENV: development
+    volumes:
+      - /home/ubuntu/Pictures:/images:ro
+    networks:
+      - appnet
+
+  translatorapi:
+    build:
+      context: ./team-19-social-robot/translator
+      dockerfile: Dockerfile
+    image: ${REGISTRY:-berserkchmonya}/translator:${TAG:-latest}
+    command: python nao_pose_service.py
+    container_name: translatorapi
+    env_file: ./team-19-social-robot/.env
+    ports:
+      - "7000:7000"
+    environment:
+      FLASK_ENV: development
+    volumes:
+      - /home/ubuntu/Pictures:/home/ubuntu/Pictures
+    depends_on:
+      - naorobotapi
+      - skeletonfinderapi
+    networks:
+      - appnet
+
+networks:
+  appnet:
+    driver: bridge
