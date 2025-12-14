@@ -103,7 +103,7 @@ status: ## Show running Docker Compose services
 # ------------------------------------------
 k8s-deploy: build-all ## Deploy all services to Kubernetes
 	@echo "Deploying to Kubernetes..."
-	kubectl apply -f k8s/
+	kubectl apply -R -f k8s/
 	@kubectl wait --for=condition=available deployment/web-deployment --timeout=120s 2>/dev/null || true
 	@kubectl wait --for=condition=available deployment/team19-web-deployment --timeout=120s 2>/dev/null || true
 	@kubectl wait --for=condition=available deployment/naorobotapi-deployment --timeout=120s 2>/dev/null || true
@@ -112,7 +112,7 @@ k8s-deploy: build-all ## Deploy all services to Kubernetes
 
 k8s-delete: ## Delete all Kubernetes resources
 	@echo "Removing from Kubernetes..."
-	kubectl delete -f k8s/ --ignore-not-found=true
+	kubectl delete -R -f k8s/ --ignore-not-found=true
 
 k8s-logs: ## Print logs from all Kubernetes pods
 	@kubectl logs -l app=web --tail=100 || true
