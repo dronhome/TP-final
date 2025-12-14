@@ -6,15 +6,26 @@ import { useEffect, useState, MouseEvent } from "react";
 
 const DOCS = {
     minutes: [
-        { label: "Zápisnica – 01.10.2024", href: "/docs/minutes/lab3.pdf" },
-        { label: "Zápisnica – 15.10.2024", href: "/docs/minutes/2024-10-15-zapisnica.pdf" },
+        { label: "Zápisnica 1", href: "/docs/minutes/zapisnica 1.pdf" },
+        { label: "Zápisnica 2", href: "/docs/minutes/zapisnica 2.pdf" },
+        { label: "Zápisnica 3", href: "/docs/minutes/zapisnica 3.pdf" },
+        { label: "Zápisnica 4", href: "/docs/minutes/zapisnica 4.pdf" },
+        { label: "Zápisnica 5", href: "/docs/minutes/zapisnica 5.pdf" },
+        { label: "Zápisnica 6", href: "/docs/minutes/zapisnica 6.pdf" },
+        { label: "Zápisnica 7", href: "/docs/minutes/zapisnica 7.pdf" },
+        { label: "Zápisnica 8", href: "/docs/minutes/zapisnica 8.pdf" },
+        { label: "Zápisnica 9", href: "/docs/minutes/zapisnica 9.pdf" },
+        { label: "Zápisnica 10", href: "/docs/minutes/zapisnica 10.pdf" },
     ],
     backlog: [
         { label: "Backlog report", href: "/docs/backlog/backlog-report.pdf" },
     ],
     retrospective: [
-        { label: "Retrospektíva – Sprint 1", href: "/docs/minutes/FirstSprint.pdf" },
-        { label: "Retrospektíva – Sprint 2", href: "/docs/retrospective/retro-sprint-2.pdf" },
+        { label: "Retrospektíva – Sprint 1", href: "/docs/retrospectives/Sprint_1.pdf" },
+        { label: "Retrospektíva – Sprint 2", href: "/docs/retrospectives/Sprint_2.pdf" },
+        { label: "Retrospektíva – Sprint 3", href: "/docs/retrospectives/Sprint_3.pdf" },
+        { label: "Retrospektíva – Sprint 4", href: "/docs/retrospectives/Sprint_4.pdf" },
+        { label: "Retrospektíva – Sprint 5", href: "/docs/retrospectives/Sprint_5.pdf" },
     ],
     methodologies: [
         { label: "Metodika komunikácie", href: "/docs/methodologies/Metodika-komunikácie.pdf " },
@@ -204,12 +215,12 @@ export default function Home() {
 
                         <div className="mt-6 grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-6">
                             {[
-                                { name: "Andrii Kostiushko", role: "Projektový manažér", img: "/team/x.jpg" },
-                                { name: "Oleksandra Pozdniakova", role: "UX / Human Interaction & Research špecialista", img: "/team/x.jpg" },
-                                { name: "Artem Shtepa", role: "AI a Machine Learning špecialista", img: "/team/x.jpg" },
-                                { name: "Marek Hužvár", role: "Robotik / Integrátor NAO robota", img: "/team/x.jpg" },
+                                { name: "Andrii Kostiushko", role: "Projektový manažér, Robotik / Integrátor NAO robota (ruky)", img: "/photos/andrii_k.jpg" },
+                                { name: "Oleksandra Pozdniakova", role: "Frontend vývojár", img: "/team/x.jpg" },
+                                { name: "Artem Shtepa", role: "Frontend vývojár", img: "/team/x.jpg" },
+                                { name: "Marek Hužvár", role: "Robotik / Integrátor NAO robota (nohy)", img: "/team/x.jpg" },
                                 { name: "Maksym Liutyi", role: "Backend & Orchestration vývojár", img: "/team/x.jpg" },
-                                { name: "Maksym Bobukh", role: "Frontend / Simulácia & VR vývojár", img: "/team/x.jpg" },
+                                { name: "Maksym Bobukh", role: "Frontend vývojár", img: "/team/x.jpg" },
                             ].map((p) => (
                                 <article
                                     key={p.name}
