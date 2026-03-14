@@ -13,8 +13,8 @@ services:
       HOST_PORT: ${HOST_PORT:-1234}
       HOST_IP: ${HOST_IP:-127.0.0.1}
       NAO_PORT: ${NAO_PORT:-9559}
-      # NAO_IP: host.docker.internal
-      NAO_IP: 10.62.44.100
+      NAO_IP: host.docker.internal
+      # NAO_IP: 10.62.44.100
       FLASK_ENV: development
     networks:
       - buildernet
@@ -55,6 +55,24 @@ services:
     depends_on:
       - naoRobotAPI
       - skeletonFinderAPI
+    networks:
+      - buildernet
+
+  voiceCommandAPI:
+    build:
+      context: ./voiceCommandAPI
+      dockerfile: Dockerfile
+    command: python server.py
+    image: jperdek/voice-command-api
+    container_name: voiceCommandAPI
+    env_file: .env
+    ports:
+      - "8004:8000"
+    environment:
+      FLASK_ENV: development
+      NAO_SET_POSE_URL: http://naoRobotAPI:5000/setting_pose/setPose
+    depends_on:
+      - naoRobotAPI
     networks:
       - buildernet
 
