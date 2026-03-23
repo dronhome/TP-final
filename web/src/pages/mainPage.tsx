@@ -6,6 +6,7 @@ import { BottomNav } from "../components/layout/bottomNav";
 import { Card } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Loader2, AlertCircle, CheckCircle, X } from "lucide-react";
+import { VoiceCommander } from "@/components/main/voiceCommander"; // adjust path as needed
 
 export default function MainPage() {
   const [file, setFile] = useState<File | null>(null);
@@ -148,19 +149,12 @@ export default function MainPage() {
     }
   };
 
-  const exerciseList = [
-    { id: 1, name: "Push-ups", description: "Do 20 reps" },
-    { id: 2, name: "Squats", description: "Do 15 reps" },
-    { id: 3, name: "Plank", description: "Hold for 60s" },
-    { id: 4, name: "Push-ups", description: "Do 20 reps" },
-    { id: 5, name: "Squats", description: "Do 15 reps" },
-  ];
-
   const isVideo = file?.type.startsWith("video/");
 
   return (
     <div className="w-full max-w-6xl mx-auto px-4 py-6">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        {/* ── left column: file upload ── */}
         <div>
           <Card className="shadow-lg">
             <FileUpload onChange={handleFileUpload} />
@@ -249,11 +243,13 @@ export default function MainPage() {
               </div>
             )}
 
-            <div className="px-4 pb-4"></div>
+            <div className="px-4 pb-4" />
           </Card>
         </div>
+
+        {/* ── right column: voice commander ── */}
         <div>
-          <ExerciseDisplay exercises={exerciseList} />
+          <VoiceCommander />
         </div>
       </div>
 
