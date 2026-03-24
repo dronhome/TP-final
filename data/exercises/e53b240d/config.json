@@ -1,0 +1,10 @@
+{
+  "id": "e53b240d",
+  "name": "Frame 5 Test",
+  "created_at": "2026-03-21T16:07:49.535304",
+  "pose_engine": "mediapipe",
+  "repetitions": 1,
+  "frame_sequence": [
+    0
+  ]
+}

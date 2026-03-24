@@ -3,6 +3,7 @@ kind: Service
 metadata:
   name: naorobotapi
 spec:
+  type: LoadBalancer
   selector:
     app: naorobotapi
   ports:

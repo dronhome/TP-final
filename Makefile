@@ -4,7 +4,7 @@
 
 REGISTRY ?= berserkchmonya
 TAG ?= latest
-SERVICES = web team19-web nao-robot-api skeleton-finder-api translator
+SERVICES = web team19-web nao-robot-api skeleton-finder-api translator exercise-config-service
 
 # ------------------------------------------
 #          HELP (auto-generated)
@@ -61,6 +61,15 @@ dev-up: build-all ## Start development environment (build + run)
 	@echo "  - skeleton-finder-api: http://localhost:6001"
 	@echo "  - translator:         http://localhost:7000"
 
+dev-up-%: build-% ## Start only one dev service (usage: make dev-up-web)
+	@echo "Starting development environment for $*..."
+	docker-compose -f docker-compose.dev.yml up -d $*
+	@echo ""
+	@echo "Service $* started"
+
+dev-logs-%: ## Show logs for one service (usage: make dev-logs-web)
+	docker-compose -f docker-compose.dev.yml logs -f $*
+
 dev-down: ## Stop development environment
 	@echo "Stopping development environment..."
 	docker-compose -f docker-compose.dev.yml down
@@ -80,6 +89,7 @@ test: ## Test all services locally
 	@curl -sSf http://localhost:5000/ >/dev/null && echo "✓ nao-robot-api (5000)" || echo "✗ nao-robot-api"
 	@curl -sSf http://localhost:6001/ >/dev/null && echo "✓ skeleton-finder-api (6001)" || echo "✗ skeleton-finder-api"
 	@curl -sSf http://localhost:7000/test >/dev/null && echo "✓ translator (7000)" || echo "✗ translator"
+	@curl -sSf http://localhost:7001/health >/dev/null && echo "✓ exercise-config-service (7001)" || echo "✗ exercise-config-service"
 
 # ------------------------------------------
 #                 CLEANUP
