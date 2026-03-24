@@ -28,3 +28,9 @@ services:
       context: ./team-19-social-robot/translator
       dockerfile: Dockerfile
     image: ${REGISTRY:-berserkchmonya}/translator:${TAG:-latest}
+
+  exercise-config-service:
+    build:
+      context: ./team-19-social-robot/ExerciseConfigService
+      dockerfile: Dockerfile
+    image: ${REGISTRY:-berserkchmonya}/exercise-config-service:${TAG:-latest}

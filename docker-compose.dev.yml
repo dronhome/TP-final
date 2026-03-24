@@ -91,6 +91,24 @@ services:
     networks:
       - appnet
 
+  exercise-config-service:
+    build:
+      context: ./team-19-social-robot/ExerciseConfigService
+      dockerfile: Dockerfile
+    image: ${REGISTRY:-berserkchmonya}/exercise-config-service:${TAG:-latest}
+    command: python run.py
+    container_name: exerciseconfigservice
+    env_file: ./team-19-social-robot/.env
+    ports:
+      - "7001:7001"
+    environment:
+      FLASK_ENV: development
+      EXERCISES_DIR: /service/exercises
+    volumes:
+      - ./data/exercises:/service/exercises
+    networks:
+      - appnet
+
 networks:
   appnet:
     driver: bridge

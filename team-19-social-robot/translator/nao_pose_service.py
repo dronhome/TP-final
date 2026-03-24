@@ -93,6 +93,56 @@ def call_nao_set_pose(angles):
 def test():
     return "NAO Pose Service is running."
 
+@app.route("/arms/from_landmarks", methods=["POST"])
+def arms_from_landmarks():
+    """
+    Accept raw xyz landmarks, return keypoints + NAO angles. No robot call.
+
+    Request (JSON):
+        {
+            "Left shoulder":  {"x": 0.60, "y": 0.41, "z": -0.30},
+            "Right shoulder": {"x": 0.42, "y": 0.36, "z": -0.31},
+            "Left elbow":     {"x": 0.62, "y": 0.53, "z": -0.24},
+            "Right elbow":    {"x": 0.36, "y": 0.26, "z": -0.41},
+            "Left wrist":     {"x": 0.61, "y": 0.63, "z": -0.28},
+            "Right wrist":    {"x": 0.32, "y": 0.11, "z": -0.43},
+            ...any extra landmarks are stored but not used for angles
+        }
+
+    Response (JSON):
+        {
+            "keypoints": { ...full input landmarks... },
+            "nao_angles": [LShoulderPitch, LShoulderRoll, LElbowRoll, LElbowYaw, ...],
+            "joint_values": {"LShoulderPitch": ..., "LShoulderRoll": ..., ...}
+        }
+    """
+    landmarks = request.get_json(silent=True)
+    if not landmarks:
+        return jsonify({"error": "JSON body with landmarks required"}), 400
+
+    required = ["Left shoulder", "Right shoulder", "Left elbow",
+                "Right elbow", "Left wrist", "Right wrist"]
+    for joint in required:
+        if joint not in landmarks:
+            return jsonify({"error": f"Missing required landmark: '{joint}'"}), 400
+
+    try:
+        result = translate_arms(landmarks)
+    except Exception as e:
+        return jsonify({"error": "failed to translate landmarks to NAO angles", "detail": str(e)}), 500
+
+    joint_keys = [
+        "LShoulderPitch", "LShoulderRoll", "LElbowRoll", "LElbowYaw",
+        "RShoulderPitch", "RShoulderRoll", "RElbowRoll", "RElbowYaw",
+    ]
+
+    return jsonify({
+        "keypoints": landmarks,
+        "nao_angles": result["angles"],
+        "joint_values": {k: result[k] for k in joint_keys},
+    }), 200
+
+
 @app.route("/arms/from_image", methods=["POST"])
 def arms_from_image():
     """

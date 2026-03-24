@@ -3,6 +3,7 @@ kind: Service
 metadata:
   name: skeletonfinderapi
 spec:
+  type: LoadBalancer
   selector:
     app: skeletonfinderapi
   ports:

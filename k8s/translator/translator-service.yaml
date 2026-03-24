@@ -3,6 +3,7 @@ kind: Service
 metadata:
   name: translator
 spec:
+  type: LoadBalancer 
   selector:
     app: translator
   ports:
