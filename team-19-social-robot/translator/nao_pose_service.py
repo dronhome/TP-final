@@ -11,6 +11,7 @@ Flask microservice that:
 
 import os
 import uuid
+import json
 
 from flask import Flask, request, jsonify
 import requests
@@ -24,6 +25,7 @@ from video_pose_processor import process_video_bytes
 
 POSE_API_URL = "http://skeletonfinderapi:6001/media_pipe_pose/pose_from_image"
 SET_POSE_URL = "http://naorobotapi:5000/setting_pose/setPose"
+EXERCISE_CONFIG_URL = os.environ.get("EXERCISE_CONFIG_URL", "http://exerciseconfigservice:7001")
 
 # Host directory mounted into pose container as /images
 POSE_HOST_ROOT = "/home/ubuntu/Pictures"      # host/VM path
@@ -73,6 +75,26 @@ def call_pose_service(container_path: str):
                 raise KeyError(f"Missing coordinate '{c}' for {joint}")
 
     return data
+
+
+def call_exercise_create(name, frames, pose_engine="mediapipe", media_bytes=None, media_ext=".mp4"):
+    """
+    POST to exerciseconfigservice /exercise/create.
+    Sends frames as JSON form field, optionally attaches media file.
+    Returns the created exercise config dict.
+    """
+    data = {
+        "name": (None, name),
+        "pose_engine": (None, pose_engine),
+        "frames": (None, json.dumps(frames), "application/json"),
+    }
+    if media_bytes is not None:
+        ext = media_ext if media_ext.startswith(".") else f".{media_ext}"
+        data["media"] = (f"original{ext}", media_bytes, "application/octet-stream")
+
+    resp = requests.post(f"{EXERCISE_CONFIG_URL}/exercise/create", files=data, timeout=30)
+    resp.raise_for_status()
+    return resp.json()
 
 
 def call_nao_set_pose(angles):
@@ -141,6 +163,74 @@ def arms_from_landmarks():
         "nao_angles": result["angles"],
         "joint_values": {k: result[k] for k in joint_keys},
     }), 200
+
+
+@app.route("/exercise/from_image", methods=["POST"])
+def exercise_from_image():
+    """
+    Full upload flow: image → skeleton → angles → save exercise.
+
+    Request (multipart/form-data):
+        image: file
+        name:  string (default "Unnamed Exercise")
+
+    Response:
+        201 JSON: exercise config
+    """
+    if "image" not in request.files:
+        return jsonify({"error": "image file is required (field 'image')"}), 400
+
+    file = request.files["image"]
+    if file.filename == "":
+        return jsonify({"error": "empty filename"}), 400
+
+    name = request.form.get("name", "Unnamed Exercise")
+    ext = os.path.splitext(file.filename)[1] or ".jpg"
+
+    try:
+        image_bytes = file.read()
+    except Exception as e:
+        return jsonify({"error": "failed to read image", "detail": str(e)}), 500
+
+    # 1) Get landmarks from skeletonfinderapi via base64 POST
+    import base64
+    try:
+        encoded = base64.b64encode(image_bytes).decode("utf-8")
+        resp = requests.post(
+            POSE_API_URL,
+            data=encoded,
+            headers={"Content-Type": "text/plain"},
+            timeout=15,
+        )
+        resp.raise_for_status()
+        landmarks = resp.json()
+    except requests.RequestException as e:
+        return jsonify({"error": "failed to call skeletonfinderapi", "detail": str(e)}), 502
+
+    required = ["Left shoulder", "Right shoulder", "Left elbow", "Right elbow", "Left wrist", "Right wrist"]
+    for joint in required:
+        if joint not in landmarks:
+            return jsonify({"error": f"incomplete pose — missing landmark: '{joint}'"}), 422
+
+    # 2) Translate landmarks → NAO angles
+    try:
+        result = translate_arms(landmarks)
+    except Exception as e:
+        return jsonify({"error": "failed to translate landmarks", "detail": str(e)}), 500
+
+    # 3) Save exercise in exerciseconfigservice
+    try:
+        config = call_exercise_create(
+            name=name,
+            frames=[{"keypoints": landmarks, "nao_angles": result["angles"]}],
+            pose_engine="mediapipe",
+            media_bytes=image_bytes,
+            media_ext=ext,
+        )
+    except requests.RequestException as e:
+        return jsonify({"error": "failed to save exercise", "detail": str(e)}), 502
+
+    return jsonify(config), 201
 
 
 @app.route("/arms/from_image", methods=["POST"])
@@ -237,6 +327,151 @@ def arms_from_image():
         "joint_values": {k: float(result[k]) for k in joint_keys},
         "nao_response": nao_response,
     })
+
+
+@app.route("/exercise/<exercise_id>/run", methods=["POST"])
+def exercise_run(exercise_id):
+    """
+    Run a saved exercise on the NAO robot.
+
+    Request (JSON, optional):
+        {"repetitions": 3}   ← overrides value stored in config
+
+    Response:
+        200 JSON: {exercise_id, repetitions, frames_per_rep, total_poses_sent, results[]}
+    """
+    data = request.get_json(silent=True) or {}
+
+    # 1) Fetch frames from exerciseconfigservice
+    try:
+        resp = requests.get(f"{EXERCISE_CONFIG_URL}/exercise/{exercise_id}/frames", timeout=10)
+        if resp.status_code == 404:
+            return jsonify({"error": f"Exercise '{exercise_id}' not found"}), 404
+        resp.raise_for_status()
+        frames = resp.json()
+    except requests.RequestException as e:
+        return jsonify({"error": "failed to fetch frames", "detail": str(e)}), 502
+
+    if not frames:
+        return jsonify({"error": "exercise has no frames"}), 422
+
+    # 2) Get repetitions from config (or override from request)
+    repetitions = data.get("repetitions")
+    if repetitions is None:
+        try:
+            cfg_resp = requests.get(f"{EXERCISE_CONFIG_URL}/exercise/{exercise_id}", timeout=10)
+            cfg_resp.raise_for_status()
+            repetitions = cfg_resp.json().get("repetitions", 1)
+        except requests.RequestException as e:
+            return jsonify({"error": "failed to fetch exercise config", "detail": str(e)}), 502
+
+    try:
+        repetitions = int(repetitions)
+        if repetitions < 1:
+            raise ValueError
+    except (ValueError, TypeError):
+        return jsonify({"error": "repetitions must be a positive integer"}), 400
+
+    # 3) Loop repetitions × frames → send each to NAO
+    results = []
+    for rep in range(repetitions):
+        for frame in frames:
+            angles = frame.get("nao_angles", [])
+            try:
+                nao_response = call_nao_set_pose(angles)
+                results.append({"rep": rep, "frame_index": frame.get("frame_index"), "status": "ok"})
+            except requests.RequestException as e:
+                results.append({"rep": rep, "frame_index": frame.get("frame_index"), "status": "error", "detail": str(e)})
+
+    return jsonify({
+        "exercise_id": exercise_id,
+        "repetitions": repetitions,
+        "frames_per_rep": len(frames),
+        "total_poses_sent": len(results),
+        "results": results,
+    }), 200
+
+
+@app.route("/exercise/from_video", methods=["POST"])
+def exercise_from_video():
+    """
+    Full upload flow: video → skeleton → angles → save exercise.
+
+    Request (multipart/form-data):
+        video:   file
+        name:    string (default "Unnamed Exercise")
+        fps:     int    (default 1)
+        seconds: int    (default -1, full video)
+
+    Response:
+        201 JSON: exercise config + frame_count
+    """
+    if "video" not in request.files:
+        return jsonify({"error": "video file is required (field 'video')"}), 400
+
+    file = request.files["video"]
+    if file.filename == "":
+        return jsonify({"error": "empty filename"}), 400
+
+    name = request.form.get("name", "Unnamed Exercise")
+
+    try:
+        fps = int(request.form.get("fps", "1"))
+        seconds = int(request.form.get("seconds", "-1"))
+    except ValueError:
+        return jsonify({"error": "fps and seconds must be integers"}), 400
+
+    try:
+        video_bytes = file.read()
+    except Exception as e:
+        return jsonify({"error": "failed to read video", "detail": str(e)}), 500
+
+    ext = os.path.splitext(file.filename)[1] or ".mp4"
+    upload_id = uuid.uuid4().hex
+    output_dir = os.path.join(VIDEO_FRAMES_ROOT, upload_id)
+
+    # 1) Get landmarks from skeletonfinderapi
+    try:
+        summary = process_video_bytes(
+            video_bytes=video_bytes,
+            output_dir=output_dir,
+            number_frames_per_sec=fps,
+            number_seconds_to_process=seconds,
+            attach_visualization=False,
+        )
+    except requests.RequestException as e:
+        return jsonify({"error": "failed to call skeletonfinderapi", "detail": str(e)}), 502
+    except Exception as e:
+        return jsonify({"error": "failed to process video", "detail": str(e)}), 500
+
+    if summary["valid_frames"] == 0:
+        return jsonify({"error": "no valid frames found in video"}), 422
+
+    # 2) Translate each frame landmarks → NAO angles
+    frames = []
+    for landmarks in summary["valid_landmarks"]:
+        try:
+            result = translate_arms(landmarks)
+        except Exception as e:
+            return jsonify({"error": "failed to translate landmarks", "detail": str(e)}), 500
+        frames.append({
+            "keypoints": landmarks,
+            "nao_angles": result["angles"],
+        })
+
+    # 3) Save exercise in exerciseconfigservice
+    try:
+        config = call_exercise_create(
+            name=name,
+            frames=frames,
+            pose_engine="mediapipe",
+            media_bytes=video_bytes,
+            media_ext=ext,
+        )
+    except requests.RequestException as e:
+        return jsonify({"error": "failed to save exercise", "detail": str(e)}), 502
+
+    return jsonify(config), 201
 
 
 @app.route("/arms/from_video", methods=["POST"])
@@ -355,6 +590,54 @@ def arms_from_video():
         "landmarks_all_json": summary["landmarks_all_json"],
         "nao_results": nao_results,
     })
+
+
+# =========================
+# EXERCISE CRUD PROXIES
+# =========================
+
+@app.route("/exercise/list", methods=["GET"])
+def exercise_list():
+    resp = requests.get(f"{EXERCISE_CONFIG_URL}/exercise/list", timeout=10)
+    return jsonify(resp.json()), resp.status_code
+
+
+@app.route("/exercise/<exercise_id>", methods=["GET"])
+def exercise_get(exercise_id):
+    resp = requests.get(f"{EXERCISE_CONFIG_URL}/exercise/{exercise_id}", timeout=10)
+    return jsonify(resp.json()), resp.status_code
+
+
+@app.route("/exercise/<exercise_id>", methods=["DELETE"])
+def exercise_delete(exercise_id):
+    resp = requests.delete(f"{EXERCISE_CONFIG_URL}/exercise/{exercise_id}", timeout=10)
+    return jsonify(resp.json()), resp.status_code
+
+
+@app.route("/exercise/<exercise_id>/config", methods=["PUT"])
+def exercise_patch_config(exercise_id):
+    resp = requests.put(
+        f"{EXERCISE_CONFIG_URL}/exercise/{exercise_id}/config",
+        json=request.get_json(silent=True) or {},
+        timeout=10,
+    )
+    return jsonify(resp.json()), resp.status_code
+
+
+@app.route("/exercise/<exercise_id>/frames", methods=["GET"])
+def exercise_get_frames(exercise_id):
+    resp = requests.get(f"{EXERCISE_CONFIG_URL}/exercise/{exercise_id}/frames", timeout=10)
+    return jsonify(resp.json()), resp.status_code
+
+
+@app.route("/exercise/<exercise_id>/sequence", methods=["PUT"])
+def exercise_patch_sequence(exercise_id):
+    resp = requests.put(
+        f"{EXERCISE_CONFIG_URL}/exercise/{exercise_id}/sequence",
+        json=request.get_json(silent=True) or {},
+        timeout=10,
+    )
+    return jsonify(resp.json()), resp.status_code
 
 
 # =========================
