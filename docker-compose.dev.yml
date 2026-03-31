@@ -83,11 +83,13 @@ services:
       - "7000:7000"
     environment:
       FLASK_ENV: development
+      EXERCISE_CONFIG_URL: http://exerciseconfigservice:7001
     volumes:
       - /home/ubuntu/Pictures:/home/ubuntu/Pictures
     depends_on:
       - naorobotapi
       - skeletonfinderapi
+      - exercise-config-service
     networks:
       - appnet
 
