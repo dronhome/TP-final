@@ -79,10 +79,30 @@ def config_path(exercise_id: str) -> str:
 def frame_path(exercise_id: str, frame_index: int) -> str:
     return os.path.join(frames_dir(exercise_id), f"frame_{frame_index:03d}.json")
 
+def frame_image_path(exercise_id: str, frame_index: int) -> str:
+    return os.path.join(frames_dir(exercise_id), f"frame_{frame_index:03d}.png")
+
 
 # =============================================================================
 # JSON helpers
 # =============================================================================
+
+def save_frame_image(exercise_id: str, frame_index: int, image_bytes: bytes) -> str:
+    """Save a PNG image for a frame. Returns the path written."""
+    path = frame_image_path(exercise_id, frame_index)
+    with open(path, "wb") as f:
+        f.write(image_bytes)
+    return path
+
+
+def get_frame_image(exercise_id: str, frame_index: int) -> bytes:
+    """Return raw image bytes for a frame. Raises FileNotFoundError if missing."""
+    path = frame_image_path(exercise_id, frame_index)
+    if not os.path.isfile(path):
+        raise FileNotFoundError(f"No image for frame {frame_index} in exercise '{exercise_id}'")
+    with open(path, "rb") as f:
+        return f.read()
+
 
 def _read_json(path: str):
     with open(path, "r") as f:
@@ -291,6 +311,40 @@ def update_frame(exercise_id: str, frame_index: int,
     if keypoints is not None:
         frame["keypoints"] = keypoints
     _write_json(path, frame)
+    return frame
+
+
+def insert_frame(exercise_id: str, position: int, keypoints: dict, nao_angles: list) -> dict:
+    """
+    Insert a new frame at a specific position in frame_sequence.
+    The frame file gets the next available index on disk; position controls
+    where it appears in playback order.
+    Returns the new frame dict.
+    """
+    if not exercise_exists(exercise_id):
+        raise FileNotFoundError(f"Exercise '{exercise_id}' not found")
+
+    existing = [
+        int(fname[6:9])
+        for fname in os.listdir(frames_dir(exercise_id))
+        if fname.startswith("frame_") and fname.endswith(".json")
+    ]
+    new_index = max(existing) + 1 if existing else 0
+
+    frame = {
+        "frame_index": new_index,
+        "keypoints": keypoints,
+        "nao_angles": nao_angles,
+    }
+    _write_json(frame_path(exercise_id, new_index), frame)
+
+    cfg = _read_json(config_path(exercise_id))
+    seq = cfg.get("frame_sequence", [])
+    position = max(0, min(position, len(seq)))
+    seq.insert(position, new_index)
+    cfg["frame_sequence"] = seq
+    _write_json(config_path(exercise_id), cfg)
+
     return frame
 
 

@@ -93,6 +93,22 @@ services:
     networks:
       - appnet
 
+  voicecommandapi:
+    build:
+      context: ./team-19-social-robot/voiceCommandAPI
+      dockerfile: Dockerfile
+    image: ${REGISTRY:-berserkchmonya}/voice-command-api:${TAG:-latest}
+    container_name: voicecommandapi
+    ports:
+      - "8000:8000"
+    environment:
+      FLASK_ENV: development
+      NAO_SET_POSE_URL: http://naorobotapi:5000/setting_pose/setPose
+    depends_on:
+      - naorobotapi
+    networks:
+      - appnet
+
   exercise-config-service:
     build:
       context: ./team-19-social-robot/ExerciseConfigService
@@ -106,6 +122,9 @@ services:
     environment:
       FLASK_ENV: development
       EXERCISES_DIR: /service/exercises
+      VOICE_COMMAND_API_URL: http://voicecommandapi:8000
+    depends_on:
+      - voicecommandapi
     volumes:
       - ./data/exercises:/service/exercises
     networks:

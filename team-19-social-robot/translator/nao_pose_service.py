@@ -437,7 +437,7 @@ def exercise_from_video():
             output_dir=output_dir,
             number_frames_per_sec=fps,
             number_seconds_to_process=seconds,
-            attach_visualization=False,
+            attach_visualization=True,
         )
     except requests.RequestException as e:
         return jsonify({"error": "failed to call skeletonfinderapi", "detail": str(e)}), 502
@@ -470,6 +470,19 @@ def exercise_from_video():
         )
     except requests.RequestException as e:
         return jsonify({"error": "failed to save exercise", "detail": str(e)}), 502
+
+    # 4) Upload frame images to exerciseconfigservice
+    exercise_id = config["id"]
+    for frame_index, img_path in enumerate(summary["valid_image_paths"]):
+        try:
+            with open(img_path, "rb") as img_file:
+                requests.post(
+                    f"{EXERCISE_CONFIG_URL}/exercise/{exercise_id}/frame/{frame_index}/image",
+                    files={"image": ("frame.png", img_file, "image/png")},
+                    timeout=10,
+                )
+        except Exception:
+            pass  # images are best-effort, don't fail the whole request
 
     return jsonify(config), 201
 

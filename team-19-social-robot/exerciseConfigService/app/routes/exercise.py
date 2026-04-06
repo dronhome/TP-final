@@ -1,6 +1,8 @@
 import os
 import json
-from flask import Blueprint, request, jsonify
+import requests
+from flask import Blueprint, request, jsonify, send_file
+import io
 
 from app.storage import (
     exercise_exists,
@@ -14,8 +16,13 @@ from app.storage import (
     get_frame,
     update_frame,
     add_frame,
+    insert_frame,
     delete_frame,
+    save_frame_image,
+    get_frame_image,
 )
+
+VOICE_COMMAND_API_URL = os.environ.get("VOICE_COMMAND_API_URL", "http://voicecommandapi:8000")
 
 exercise_bp = Blueprint("exercise", __name__, url_prefix="/exercise")
 
@@ -228,6 +235,85 @@ def post_frame(exercise_id):
 
     frame = add_frame(exercise_id, keypoints=keypoints, nao_angles=nao_angles)
     return jsonify(frame), 201
+
+
+# ---------------------------------------------------------------------------
+# POST /exercise/<id>/frame/from_pose
+# Body (JSON): {"pose_name": "wave", "position": 2}
+# Looks up pose from voiceCommandAPI and inserts it at the given position.
+# ---------------------------------------------------------------------------
+@exercise_bp.route("/<exercise_id>/frame/from_pose", methods=["POST"])
+def insert_frame_from_pose(exercise_id):
+    if not exercise_exists(exercise_id):
+        return jsonify({"error": f"Exercise '{exercise_id}' not found"}), 404
+
+    data = request.get_json(silent=True) or {}
+    pose_name = data.get("pose_name")
+    position = data.get("position")
+
+    if not pose_name:
+        return jsonify({"error": "'pose_name' is required"}), 400
+    if position is None:
+        return jsonify({"error": "'position' is required (integer index in frame sequence)"}), 400
+
+    try:
+        position = int(position)
+    except (ValueError, TypeError):
+        return jsonify({"error": "'position' must be an integer"}), 400
+
+    try:
+        resp = requests.get(f"{VOICE_COMMAND_API_URL}/pose/{pose_name}", timeout=10)
+        if resp.status_code == 404:
+            return jsonify(resp.json()), 400
+        resp.raise_for_status()
+        pose = resp.json()
+    except requests.RequestException as e:
+        return jsonify({"error": "failed to reach voiceCommandAPI", "detail": str(e)}), 502
+
+    try:
+        frame = insert_frame(
+            exercise_id,
+            position=position,
+            keypoints={"pose_name": pose["name"]},
+            nao_angles=pose["angles"],
+        )
+    except FileNotFoundError as e:
+        return jsonify({"error": str(e)}), 404
+
+    return jsonify({
+        "frame": frame,
+        "pose_name": pose["name"],
+        "description": pose["description"],
+        "inserted_at_position": position,
+    }), 201
+
+
+# ---------------------------------------------------------------------------
+# GET /exercise/<id>/frame/<idx>/image  — returns PNG image for that frame
+# ---------------------------------------------------------------------------
+@exercise_bp.route("/<exercise_id>/frame/<int:frame_index>/image", methods=["GET"])
+def get_frame_image_route(exercise_id, frame_index):
+    if not exercise_exists(exercise_id):
+        return jsonify({"error": f"Exercise '{exercise_id}' not found"}), 404
+    try:
+        image_bytes = get_frame_image(exercise_id, frame_index)
+    except FileNotFoundError as e:
+        return jsonify({"error": str(e)}), 404
+    return send_file(io.BytesIO(image_bytes), mimetype="image/png")
+
+
+# ---------------------------------------------------------------------------
+# POST /exercise/<id>/frame/<idx>/image  — upload PNG image for that frame
+# ---------------------------------------------------------------------------
+@exercise_bp.route("/<exercise_id>/frame/<int:frame_index>/image", methods=["POST"])
+def upload_frame_image_route(exercise_id, frame_index):
+    if not exercise_exists(exercise_id):
+        return jsonify({"error": f"Exercise '{exercise_id}' not found"}), 404
+    if "image" not in request.files:
+        return jsonify({"error": "image file is required (field 'image')"}), 400
+    image_bytes = request.files["image"].read()
+    save_frame_image(exercise_id, frame_index, image_bytes)
+    return jsonify({"saved": True, "exercise_id": exercise_id, "frame_index": frame_index}), 201
 
 
 # ---------------------------------------------------------------------------
