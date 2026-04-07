@@ -1,6 +1,7 @@
 import { Routes, Route } from "react-router-dom";
 import MainPage from "./pages/mainPage";
 import ExercisePage from "./pages/exercisePage";
+import VideoEditor from "./pages/videoEditor";
 import GroupPage from "./pages/groupPage";
 
 function App() {
@@ -10,6 +11,7 @@ function App() {
         <Route path="/" element={<MainPage />} />
         <Route path="/exercise" element={<ExercisePage />} />
         <Route path="/group" element={<GroupPage />} />
+        <Route path="/edit" element={<VideoEditor />} />
       </Routes>
     </div>
   );
