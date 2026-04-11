@@ -1,10 +1,12 @@
 "use client";
 
 import Image from "next/image";
-
 import { useEffect, useState, MouseEvent } from "react";
 
+// ─── Data ────────────────────────────────────────────────────────────────────
+
 const DOCS = {
+    // ── Zimný semester ───────────────────────────────────────────────────────
     minutes: [
         { label: "Zápisnica 1", href: "/docs/minutes/zapisnica 1.pdf" },
         { label: "Zápisnica 2", href: "/docs/minutes/zapisnica 2.pdf" },
@@ -27,17 +29,42 @@ const DOCS = {
         { label: "Retrospektíva – Sprint 4", href: "/docs/retrospectives/Sprint_4.pdf" },
         { label: "Retrospektíva – Sprint 5", href: "/docs/retrospectives/Sprint_5.pdf" },
     ],
+    // ── Letný semester ────────────────────────────────────────────────────────
+    minutes_summer: [
+        { label: "Zápisnica 1", href: "/docs/minutes/letny/zapisnica 1.pdf" },
+        { label: "Zápisnica 2", href: "/docs/minutes/letny/zapisnica 2.pdf" },
+        { label: "Zápisnica 3", href: "/docs/minutes/letny/zapisnica 3.pdf" },
+    ],
+    backlog_summer: [
+        { label: "Backlog report", href: "/docs/backlog/letny/backlog-report.pdf" },
+    ],
+    retrospective_summer: [] as { label: string; href: string }[],
+    // ── Bez semestra ─────────────────────────────────────────────────────────
     methodologies: [
         { label: "Metodika komunikácie", href: "/docs/methodologies/Metodika-komunikácie.pdf " },
         { label: "Metodika revízie kódu", href: "/docs/methodologies/Metodika-revízieKódu.pdf" },
         { label: "Metodika spravovania backlogu", href: "/docs/methodologies/Metodika-spravovaniaBacklogu.pdf" },
         { label: "Metodika práce s robotom", href: "/docs/methodologies/Metodika-prácesRobotom.pdf" },
         { label: "Metodika spracovania videí", href: "/docs/methodologies/Metodika-spracovaniaVideí.pdf" },
-
-
     ],
 };
 
+const TEAM = [
+    { name: "Andrii Kostiushko", role: "Projektový manažér, Robotik / Integrátor NAO robota (ruky)", img: "/photos/andrii_k.jpg" },
+    { name: "Oleksandra Pozdniakova", role: "Frontend vývojár", img: "/photos/saska.jpg" },
+    { name: "Artem Shtepa", role: "Frontend vývojár", img: "/photos/artem.jpg" },
+    { name: "Marek Hužvár", role: "Robotik / Integrátor NAO robota (nohy)", img: "/photos/marek.jpg" },
+    { name: "Maksym Liutyi", role: "Backend & Orchestration vývojár", img: "/photos/liutyi.jpg" },
+    { name: "Maksym Bobukh", role: "Frontend vývojár", img: "/photos/bobukh.jpg" },
+];
+
+const WINTER_EPICS = [
+    "Robot Pose & Behavior Control",
+    "Backend & Frontend System",
+    "Deployment & Project Presentation",
+];
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function jump(id: string) {
     return (e: MouseEvent<HTMLAnchorElement>) => {
@@ -45,22 +72,41 @@ function jump(id: string) {
         const scroller = document.getElementById("left-pane");
         const target = document.getElementById(id);
         if (!scroller || !target) return;
-
-        const topWithinScroller =
+        const top =
             target.getBoundingClientRect().top -
             scroller.getBoundingClientRect().top +
             scroller.scrollTop;
-
-        const HEADER_H = 20;
-
-        scroller.scrollTo({
-            top: topWithinScroller - HEADER_H,
-            behavior: "smooth",
-        });
-
+        scroller.scrollTo({ top: top - 24, behavior: "smooth" });
         history.replaceState(null, "", `#${id}`);
     };
 }
+
+// ─── UI primitives ────────────────────────────────────────────────────────────
+
+function Divider() {
+    return (
+        <div className="h-px w-full my-14 bg-gradient-to-r from-transparent via-[#7c3aed]/20 to-transparent" />
+    );
+}
+
+function SectionHeading({ children }: { children: React.ReactNode }) {
+    return (
+        <div className="mb-8">
+            <h2 className="text-3xl font-bold tracking-tight text-[#0f0e1a]">{children}</h2>
+            <div className="mt-2.5 h-0.5 w-12 rounded-full bg-gradient-to-r from-[#7c3aed] to-[#4f46e5]" />
+        </div>
+    );
+}
+
+function DocIcon() {
+    return (
+        <svg className="h-4 w-4 text-[#7c3aed]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+    );
+}
+
+// ─── Main page ────────────────────────────────────────────────────────────────
 
 export default function Home() {
     const [activeId, setActiveId] = useState<string>("");
@@ -68,133 +114,147 @@ export default function Home() {
     useEffect(() => {
         const scroller = document.getElementById("left-pane");
         if (!scroller) return;
-
         const sections = Array.from(scroller.querySelectorAll("section[id]"));
         const observer = new IntersectionObserver(
             (entries) => {
                 const visible = entries
                     .filter((e) => e.isIntersecting)
                     .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
-
                 if (visible.length > 0) {
                     const id = visible[0].target.id;
-
                     const parentMap: Record<string, string> = {
                         minutes: "documents",
                         backlog_report: "documents",
                         sprint_retrospective: "documents",
                         methodologies: "documents",
                     };
-
                     setActiveId(parentMap[id] ?? id);
                 }
             },
             { root: scroller, threshold: 0.9 }
         );
-
-
         sections.forEach((s) => observer.observe(s));
         return () => observer.disconnect();
     }, []);
 
-    const linkClasses = (id: string) =>
-        `transition-colors ${
-            activeId === id ? "text-[var(--container)] font-semibold" : "text-[var(--foreground)]"
-        } hover:text-[var(--container)]`;
+    const navItem = (id: string, label: string, indent = false) => {
+        const active = activeId === id;
+        return (
+            <a
+                key={id}
+                href={`#${id}`}
+                onClick={jump(id)}
+                className={[
+                    "flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all duration-200",
+                    indent ? "ml-3" : "",
+                    active
+                        ? "bg-[rgba(124,58,237,0.1)] text-[#7c3aed] font-semibold"
+                        : "text-[#64748b] hover:text-[#0f0e1a] hover:bg-[#ede9fe]",
+                ].join(" ")}
+            >
+                <span
+                    className={[
+                        "h-1.5 w-1.5 rounded-full flex-shrink-0 transition-all",
+                        active ? "bg-[#7c3aed] scale-125" : "bg-transparent",
+                    ].join(" ")}
+                />
+                {label}
+            </a>
+        );
+    };
 
     return (
-        <div className="flex grow h-screen">
+        <div className="flex grow h-screen gap-0">
+            {/* ── Left pane ── */}
             <div
                 id="left-pane"
-                className="w-full md:w-5/7 overflow-y-auto scroll-pt-[72px] md:rounded-3xl md:shadow-[0_0_10px_var(--container)] md:border-[var(--lines)]/20 md:border-t-[0.5px] md:border-r-[0.5px] p-5 md:ml-5 mt-5"
+                className="w-full md:w-5/7 overflow-y-auto scroll-pt-6 md:rounded-3xl md:border md:border-[#ede9fe] md:shadow-[0_0_32px_rgba(124,58,237,0.1)] md:ml-3 mt-3 mb-3 bg-white/55 backdrop-blur-sm"
             >
-                <div className="px-5 md:px-20 p-5 pb-20  md:pb-60">
-                    <section id="about" className="mb-10 leading-relaxed ">
-                        <h2 className="info-section">O projekte</h2>
-                        <p>
-                            Projekt sa zameriava na praktický vývoj modulárneho prostredia pre simuláciu a riadenie
-                            sociálnych robotov, navrhnutého na podporu interakcie človeka s robotom v kontexte
-                            starostlivosti o seniorov a ich fyzickej či mentálnej aktivity. Cieľom je rozšíriť
-                            existujúce riešenie{" "}
-                            <a
-                                href="https://github.com/jperdek/socialRobotEnv"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-[var(--container)] underline hover:no-underline"
-                            >
-                                socialRobotEnv
-                            </a>{" "}
-                            o interaktívne a adaptívne funkcionality využiteľné v reálnych scenároch – napríklad
-                            pri vedení cvičení, tréningových aktivitách, zlepšovaní pozornosti alebo zábavných
-                            interakciách počas terapie so seniormi.
-                        </p>
+                <div className="px-6 md:px-14 lg:px-20 py-10 pb-40">
 
-                        <p className="mt-4">
-                            Riešenie je založené na architektúre samostatne nasaditeľných mikroslužieb, ktoré
-                            komunikujú prostredníctvom API a sú kontajnerizované pomocou Dockeru. Tento prístup
-                            zaručuje jednoduchú rozšíriteľnosť, škálovateľnosť a opakovateľnosť výskumu, ako aj
-                            možnosť prispôsobenia pre rôzne robotické platformy. Súčasťou projektu je aj využitie
-                            metód umelej inteligencie a veľkých jazykových modelov (LLM) na podporu prirodzenej
-                            komunikácie človeka s robotom.
-                        </p>
-
-                        <p className="mt-4">
-                            Dlhodobým cieľom projektu je vyhodnotiť použiteľnosť takto orchestrácie mikroslužieb
-                            v simulovanom aj reálnom prostredí, najmä pri interakcii robota (napr. NAO) s viacerými
-                            používateľmi. Výsledky budú prispievať k výskumu v oblasti sociálnej robotiky a umožnia
-                            ďalšie zdieľanie Dockerizovaných nástrojov pre akademické aj terapeutické účely.
-                        </p>
+                    {/* ABOUT */}
+                    <section id="about">
+                        <SectionHeading>O projekte</SectionHeading>
+                        <div className="space-y-4 leading-relaxed text-[15px]">
+                            <p className="text-[#0f0e1a] font-medium text-base leading-7">
+                                Projekt sa zameriava na praktický vývoj modulárneho prostredia pre simuláciu
+                                a riadenie sociálnych robotov, navrhnutého na podporu interakcie človeka
+                                s robotom v kontexte starostlivosti o seniorov a ich fyzickej či mentálnej aktivity.
+                            </p>
+                            <p className="text-[#64748b]">
+                                Cieľom je rozšíriť existujúce riešenie{" "}
+                                <a
+                                    href="https://github.com/jperdek/socialRobotEnv"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-[#7c3aed] underline underline-offset-2 hover:no-underline"
+                                >
+                                    socialRobotEnv
+                                </a>{" "}
+                                o interaktívne a adaptívne funkcionality využiteľné v reálnych scenároch –
+                                napríklad pri vedení cvičení, tréningových aktivitách, zlepšovaní pozornosti
+                                alebo zábavných interakciách počas terapie so seniormi.
+                            </p>
+                            <p className="text-[#64748b]">
+                                Riešenie je založené na architektúre samostatne nasaditeľných mikroslužieb,
+                                ktoré komunikujú prostredníctvom API a sú kontajnerizované pomocou Dockeru.
+                                Tento prístup zaručuje jednoduchú rozšíriteľnosť, škálovateľnosť
+                                a opakovateľnosť výskumu, ako aj možnosť prispôsobenia pre rôzne robotické
+                                platformy. Súčasťou projektu je aj využitie metód umelej inteligencie
+                                a veľkých jazykových modelov (LLM) na podporu prirodzenej komunikácie
+                                človeka s robotom.
+                            </p>
+                            <p className="text-[#64748b]">
+                                Dlhodobým cieľom projektu je vyhodnotiť použiteľnosť takto orchestrácie
+                                mikroslužieb v simulovanom aj reálnom prostredí, najmä pri interakcii
+                                robota (napr. NAO) s viacerými používateľmi. Výsledky budú prispievať
+                                k výskumu v oblasti sociálnej robotiky a umožnia ďalšie zdieľanie
+                                Dockerizovaných nástrojov pre akademické aj terapeutické účely.
+                            </p>
+                        </div>
                     </section>
 
-                    <div className="h-[1px] w-full bg-[var(--container)] mb-10 mt-2 mb-12"></div>
+                    <Divider />
 
-
-                    <section id="sprints" className="mb-10">
-                        <h2 className="info-section ">Epiky</h2>
-
-                        <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-12">
-
+                    {/* EPICS */}
+                    <section id="sprints">
+                        <SectionHeading>Epiky</SectionHeading>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            {/* Winter */}
                             <div>
-                                <p className="sub-info-section mb-4 font-semibold text-center">Zimné epiky</p>
-
-                                <div className="relative pl-8">
-                                    <div className="absolute left-3 top-0 bottom-0 w-[3px] bg-[var(--container)]/40 -z-10"></div>
-
-                                    {[
-                                        "Robot Pose & Behavior Control",
-                                        "Backend & Frontend System",
-                                        "Deployment & Project Presentation",
-                                    ].map((item, i) => (
-                                        <div key={i} className="relative mb-6 last:mb-0">
-
-                                            <div className="absolute left-[-3px] top-1/2 -translate-y-1/2 h-3 w-3 rounded-full bg-[var(--container)] shadow-[0_0_6px_var(--container)]"></div>
-
-
-                                            <div className="ml-6 rounded-xl border border-[var(--lines)] bg-[var(--background)] px-6 py-3 shadow-[0_0_8px_var(--container)]">
-                                                {item}
-                                            </div>
+                                <p className="text-xs font-bold uppercase tracking-widest text-[#7c3aed] mb-4">
+                                    Zimné epiky
+                                </p>
+                                <div className="space-y-3">
+                                    {WINTER_EPICS.map((item, i) => (
+                                        <div
+                                            key={i}
+                                            className="flex items-start gap-4 p-4 rounded-xl bg-white border border-[#ede9fe] shadow-sm hover:shadow-md hover:border-[rgba(124,58,237,0.3)] hover:-translate-y-px transition-all duration-200"
+                                        >
+                                            <span className="flex-shrink-0 h-7 w-7 rounded-full bg-gradient-to-br from-[#7c3aed] to-[#4f46e5] text-white text-xs font-bold flex items-center justify-center shadow-md shadow-[rgba(124,58,237,0.3)]">
+                                                {i + 1}
+                                            </span>
+                                            <span className="pt-0.5 text-sm font-medium text-[#0f0e1a]">{item}</span>
                                         </div>
                                     ))}
                                 </div>
                             </div>
 
+                            {/* Summer */}
                             <div>
-                                <p className="sub-info-section mb-4 font-semibold text-center">Letné epiky</p>
-
-                                <div className="relative pl-8">
-                                    <div className="absolute left-3 top-0 bottom-0 w-[3px] bg-[var(--container)]/40 -z-10"></div>
-
-                                    {[
-                                        "",
-                                        "",
-                                        "",
-                                    ].map((item, i) => (
-                                        <div key={i} className="relative mb-6 last:mb-0">
-                                            <div className="absolute left-[-3px] top-1/2 -translate-y-1/2 h-3 w-3 rounded-full bg-[var(--container)] shadow-[0_0_6px_var(--container)]"></div>
-
-                                            <div className="ml-6 rounded-xl border border-[var(--lines)] bg-[var(--background)] px-6 py-3 shadow-[0_0_8px_var(--container)]">
-                                                {item}
-                                            </div>
+                                <p className="text-xs font-bold uppercase tracking-widest text-[#64748b] mb-4">
+                                    Letné epiky
+                                </p>
+                                <div className="space-y-3">
+                                    {[0, 1, 2].map((i) => (
+                                        <div
+                                            key={i}
+                                            className="flex items-start gap-4 p-4 rounded-xl bg-white/50 border border-[#ede9fe] border-dashed"
+                                        >
+                                            <span className="flex-shrink-0 h-7 w-7 rounded-full bg-[#ede9fe] text-[#a78bfa] text-xs font-bold flex items-center justify-center">
+                                                {i + 1}
+                                            </span>
+                                            <span className="pt-0.5 text-sm text-[#a78bfa] italic">Čoskoro...</span>
                                         </div>
                                     ))}
                                 </div>
@@ -202,70 +262,49 @@ export default function Home() {
                         </div>
                     </section>
 
+                    <Divider />
 
-
-
-                    <div className="h-[1px] w-full bg-[var(--container)] mb-10"></div>
-
-
-
-
-                    <section id="team" className="mb-10">
-                        <h2 className="info-section">Náš tím</h2>
-
-                        <div className="mt-6 grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-6">
-                            {[
-                                { name: "Andrii Kostiushko", role: "Projektový manažér, Robotik / Integrátor NAO robota (ruky)", img: "/photos/andrii_k.jpg" },
-                                { name: "Oleksandra Pozdniakova", role: "Frontend vývojár", img: "/team/x.jpg" },
-                                { name: "Artem Shtepa", role: "Frontend vývojár", img: "/team/x.jpg" },
-                                { name: "Marek Hužvár", role: "Robotik / Integrátor NAO robota (nohy)", img: "/team/x.jpg" },
-                                { name: "Maksym Liutyi", role: "Backend & Orchestration vývojár", img: "/team/x.jpg" },
-                                { name: "Maksym Bobukh", role: "Frontend vývojár", img: "/team/x.jpg" },
-                            ].map((p) => (
+                    {/* TEAM */}
+                    <section id="team">
+                        <SectionHeading>Náš tím</SectionHeading>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 md:gap-5">
+                            {TEAM.map((p) => (
                                 <article
                                     key={p.name}
-                                    className="rounded-2xl border border-[var(--lines)] bg-[var(--background)] shadow-[0_0_10px_var(--container)]/40 overflow-hidden"
+                                    className="group relative rounded-2xl overflow-hidden shadow-md hover:shadow-xl hover:shadow-[rgba(124,58,237,0.18)] transition-all duration-300 hover:-translate-y-1.5 cursor-default"
                                 >
-
-                                    <div className="relative aspect-square w-full">
+                                    <div className="relative aspect-[3/4] w-full">
                                         <Image
                                             src={p.img}
                                             alt={p.name}
                                             fill
-                                            className="object-cover"
+                                            className="object-cover object-top transition-transform duration-500 group-hover:scale-105"
                                             priority={false}
-                                            sizes="(min-width:1280px) 25vw, (min-width:1024px) 33vw, (min-width:640px) 50vw, 100vw"
-
+                                            sizes="(min-width:1280px) 18vw, (min-width:768px) 26vw, 45vw"
                                         />
-                                    </div>
-
-                                    <div className="p-4">
-                                        <h3 className="text-lg font-semibold line-clamp-1">{p.name}</h3>
-                                        <p className="mt-1 text-sm text-[var(--foreground)] line-clamp-2">
-                                            {p.role}
-                                        </p>
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/15 to-transparent" />
+                                        <div className="absolute bottom-0 left-0 right-0 p-4">
+                                            <h3 className="text-[13px] font-bold text-white leading-tight">{p.name}</h3>
+                                            <p className="mt-1 text-[11px] text-white/65 leading-snug">{p.role}</p>
+                                        </div>
                                     </div>
                                 </article>
                             ))}
                         </div>
                     </section>
 
+                    <Divider />
 
-                    <div className="h-[1px] w-full bg-[var(--container)] mb-10"></div>
+                    <Documents />
 
-                    <Documents/>
+                    <Divider />
 
-                    <div className="h-[1px] w-full bg-[var(--container)] mb-10"></div>
-
-
-                    <section id="contacts" className="mb-10">
-                        <h2 className="info-section">Kontakty</h2>
-
-                        <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-8">
-
-                            <div className="rounded-2xl border border-[var(--lines)]/40 shadow-[0_0_10px_var(--container)] overflow-hidden">
+                    {/* CONTACTS */}
+                    <section id="contacts">
+                        <SectionHeading>Kontakty</SectionHeading>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="rounded-2xl overflow-hidden border border-[#ede9fe] bg-white shadow-sm hover:shadow-md transition-shadow">
                                 <div className="aspect-video">
-
                                     <iframe
                                         title="FIIT STU – mapa"
                                         src="https://www.google.com/maps?q=FIIT%20STU%20Bratislava&output=embed"
@@ -274,38 +313,36 @@ export default function Home() {
                                         referrerPolicy="no-referrer-when-downgrade"
                                     />
                                 </div>
-
-                                <div className="flex items-center justify-between px-4 py-3">
-                                    <div>
-                                        <p className="font-semibold">FIIT STU</p>
-
-                                        <a
-                                            href="https://maps.app.goo.gl/PtXAVrcJWmcB2iYz8"
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="text-sm text-[var(--container)] underline hover:no-underline"
-                                        >
-                                            Otvoriť v Mapách
-                                        </a>
-                                    </div>
+                                <div className="px-4 py-3">
+                                    <p className="font-semibold text-[#0f0e1a]">FIIT STU</p>
+                                    <a
+                                        href="https://maps.app.goo.gl/PtXAVrcJWmcB2iYz8"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-sm text-[#7c3aed] underline underline-offset-2 hover:no-underline"
+                                    >
+                                        Otvoriť v Mapách
+                                    </a>
                                 </div>
                             </div>
 
-                            <div className="rounded-2xl border border-[var(--lines)]/40 shadow-[0_0_10px_var(--container)] p-6">
-                                <h3 className="text-xl font-semibold mb-3">Kontakt na tím</h3>
-
-                                <div className="space-y-3">
-                                    <div className="flex items-center gap-3">
-                                        <span className="h-2.5 w-2.5 rounded-full bg-[var(--container)] shadow-[0_0_6px_var(--container)]" />
-                                        <span>E-mail:</span>
+                            <div className="rounded-2xl border border-[#ede9fe] bg-white shadow-sm p-6">
+                                <h3 className="text-lg font-semibold mb-5 text-[#0f0e1a]">Kontakt na tím</h3>
+                                <div className="flex items-center gap-4">
+                                    <div className="h-10 w-10 rounded-xl bg-[rgba(124,58,237,0.1)] flex items-center justify-center flex-shrink-0">
+                                        <svg className="h-5 w-5 text-[#7c3aed]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <p className="text-xs font-semibold uppercase tracking-widest text-[#64748b] mb-0.5">E-mail</p>
                                         <a
                                             href="mailto:tim19fiitstu@gmail.com"
-                                            className="text-[var(--container)] underline hover:no-underline"
+                                            className="text-sm text-[#7c3aed] underline underline-offset-2 hover:no-underline"
                                         >
                                             tim19fiitstu@gmail.com
                                         </a>
                                     </div>
-
                                 </div>
                             </div>
                         </div>
@@ -314,45 +351,22 @@ export default function Home() {
                 </div>
             </div>
 
-            {/* RIGHT NAVIGATION */}
-            <div className="w-2/7 pl-5 pr-5 pt-5 pb-5 hidden md:block">
-                <div className="h-[100%] rounded-3xl shadow-[0_0_10px_var(--container)] border-[var(--lines)]/20 border-b-[0.5px] border-l-[0.5px] border-t-[0.5px] p-10">
-                    <h1 className="text-heading">Na tejto stránke:</h1>
-
-                    <nav className="flex flex-col gap-2 py-3">
-                        <a href="#about" onClick={jump("about")} className={linkClasses("about")}>
-                            O projekte
-                        </a>
-                        <a href="#epics" onClick={jump("epics")} className={linkClasses("epics")}>
-                            Epiky
-                        </a>
-                        <a href="#team" onClick={jump("team")} className={linkClasses("team")}>
-                            Náš tím
-                        </a>
-                        <a href="#documents" onClick={jump("documents")} className={linkClasses("documents")}>
-                            Dokumenty
-                        </a>
-
-                        <div className="ml-3 flex flex-col gap-2">
-                            <a href="#minutes" onClick={jump("minutes")} className={linkClasses("minutes")}>
-                                Zápisnice
-                            </a>
-                            <a href="#backlog_report" onClick={jump("backlog_report")} className={linkClasses("backlog_report")}>
-                                Backlog report
-                            </a>
-                            <a href="#sprint_retrospective" onClick={jump("sprint_retrospective")} className={linkClasses("sprint_retrospective")}>
-                                Retrospektíva šprintov
-                            </a>
-                            <a href="#methodologies" onClick={jump("methodologies")} className={linkClasses("methodologies")}>
-                                Metodiky
-                            </a>
-                        </div>
-
-
-
-                        <a href="#contacts" onClick={jump("contacts")} className={linkClasses("contacts")}>
-                            Kontakty
-                        </a>
+            {/* ── Right nav ── */}
+            <div className="w-2/7 px-3 py-3 hidden md:block">
+                <div className="h-full rounded-3xl bg-white/55 backdrop-blur-sm border border-[#ede9fe] shadow-sm px-6 py-8">
+                    <p className="text-xs font-bold uppercase tracking-widest text-[#7c3aed] mb-4 px-3">
+                        Na tejto stránke
+                    </p>
+                    <nav className="flex flex-col gap-0.5">
+                        {navItem("about", "O projekte")}
+                        {navItem("sprints", "Epiky")}
+                        {navItem("team", "Náš tím")}
+                        {navItem("documents", "Dokumenty")}
+                        {navItem("minutes", "Zápisnice", true)}
+                        {navItem("backlog_report", "Backlog report", true)}
+                        {navItem("sprint_retrospective", "Retrospektíva", true)}
+                        {navItem("methodologies", "Metodiky", true)}
+                        {navItem("contacts", "Kontakty")}
                     </nav>
                 </div>
             </div>
@@ -360,21 +374,26 @@ export default function Home() {
     );
 }
 
+// ─── Documents ────────────────────────────────────────────────────────────────
 
 function DocList({ items }: { items: { label: string; href: string }[] }) {
     return (
-        <ul className="mt-4 space-y-3">
+        <ul className="mt-3 space-y-2">
             {items.map((d) => (
                 <li key={d.href}>
                     <a
                         href={d.href}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="group flex items-center gap-3 rounded-lg border border-[var(--lines)]/40 bg-[var(--background)] px-4 py-3 hover:shadow-[0_0_10px_var(--container)] transition-shadow"
+                        className="group flex items-center gap-3 rounded-xl border border-[#ede9fe] bg-white px-4 py-3 hover:border-[rgba(124,58,237,0.3)] hover:shadow-md hover:shadow-[rgba(124,58,237,0.08)] hover:-translate-y-px transition-all duration-200"
                     >
-                        <span className="h-2.5 w-2.5 rounded-full bg-[var(--container)] shadow-[0_0_6px_var(--container)]" />
-                        <span className="flex-1">{d.label}</span>
-                        <span className="text-sm text-[var(--container)] opacity-80 group-hover:opacity-100">Otvoriť PDF</span>
+                        <div className="flex-shrink-0 h-9 w-9 rounded-lg bg-[rgba(124,58,237,0.08)] flex items-center justify-center">
+                            <DocIcon />
+                        </div>
+                        <span className="flex-1 text-sm font-medium text-[#0f0e1a]">{d.label}</span>
+                        <span className="text-xs font-semibold text-[#7c3aed] opacity-0 group-hover:opacity-100 transition-opacity">
+                            PDF →
+                        </span>
                     </a>
                 </li>
             ))}
@@ -382,32 +401,93 @@ function DocList({ items }: { items: { label: string; href: string }[] }) {
     );
 }
 
+function SemesterLabel({ children }: { children: React.ReactNode }) {
+    return (
+        <div className="flex items-center gap-3 mb-6">
+            <span className="h-px flex-1 bg-[#ede9fe]" />
+            <span className="text-xs font-bold uppercase tracking-widest text-[#64748b] whitespace-nowrap">
+                {children}
+            </span>
+            <span className="h-px flex-1 bg-[#ede9fe]" />
+        </div>
+    );
+}
+
+function DocSubSection({ label, children }: { label: string; children: React.ReactNode }) {
+    return (
+        <div>
+            <p className="text-xs font-bold uppercase tracking-widest text-[#7c3aed] mb-2">{label}</p>
+            {children}
+        </div>
+    );
+}
+
+function EmptyDocList() {
+    return (
+        <p className="mt-3 text-sm text-[#a78bfa] italic px-1">Čoskoro...</p>
+    );
+}
+
 function Documents() {
     return (
-        <section id="documents" className="mb-10">
-            <h2 className="info-section">Dokumenty</h2>
+        <section id="documents">
+            <SectionHeading>Dokumenty</SectionHeading>
 
-            {/* ZÁPISNICE */}
-            <section id="minutes" className="mt-8">
-                <h3 className="sub-info-section font-semibold">Zápisnice</h3>
-                <DocList items={DOCS.minutes} />
-            </section>
+            {/* ZIMNÝ SEMESTER */}
+            <div className="rounded-2xl border border-[#ede9fe] bg-white/60 p-6">
+                <SemesterLabel>Zimný semester</SemesterLabel>
 
-            {/* BACKLOG REPORT */}
-            <section id="backlog_report" className="mt-10">
-                <h3 className="sub-info-section font-semibold">Backlog report</h3>
-                <DocList items={DOCS.backlog} />
-            </section>
+                <section id="minutes">
+                    <DocSubSection label="Zápisnice">
+                        <DocList items={DOCS.minutes} />
+                    </DocSubSection>
+                </section>
 
-            {/* RETROSPEKTÍVA ŠPRINTOV */}
-            <section id="sprint_retrospective" className="mt-10">
-                <h3 className="sub-info-section font-semibold">Retrospektíva šprintov</h3>
-                <DocList items={DOCS.retrospective} />
-            </section>
+                <section id="backlog_report" className="mt-7">
+                    <DocSubSection label="Backlog report">
+                        <DocList items={DOCS.backlog} />
+                    </DocSubSection>
+                </section>
 
-            {/* METODIKY */}
+                <section id="sprint_retrospective" className="mt-7">
+                    <DocSubSection label="Retrospektíva šprintov">
+                        <DocList items={DOCS.retrospective} />
+                    </DocSubSection>
+                </section>
+            </div>
+
+            {/* LETNÝ SEMESTER */}
+            <div className="mt-5 rounded-2xl border border-[#ede9fe] border-dashed bg-white/30 p-6">
+                <SemesterLabel>Letný semester</SemesterLabel>
+
+                <section id="minutes_summer">
+                    <DocSubSection label="Zápisnice">
+                        {DOCS.minutes_summer.length > 0
+                            ? <DocList items={DOCS.minutes_summer} />
+                            : <EmptyDocList />}
+                    </DocSubSection>
+                </section>
+
+                <section id="backlog_report_summer" className="mt-7">
+                    <DocSubSection label="Backlog report">
+                        {DOCS.backlog_summer.length > 0
+                            ? <DocList items={DOCS.backlog_summer} />
+                            : <EmptyDocList />}
+                    </DocSubSection>
+                </section>
+
+                <section id="sprint_retrospective_summer" className="mt-7">
+                    <DocSubSection label="Retrospektíva šprintov">
+                        {DOCS.retrospective_summer.length > 0
+                            ? <DocList items={DOCS.retrospective_summer} />
+                            : <EmptyDocList />}
+                    </DocSubSection>
+                </section>
+            </div>
+
+            {/* METODIKY — bez semestra */}
             <section id="methodologies" className="mt-10">
-                <h3 className="sub-info-section font-semibold">Metodiky</h3>
+                <p className="text-xs font-bold uppercase tracking-widest text-[#7c3aed] mb-2">Metodiky</p>
                 <DocList items={DOCS.methodologies} />
             </section>
         </section>
