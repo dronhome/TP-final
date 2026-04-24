@@ -13,7 +13,7 @@ Routes:
 
 import os
 import requests
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 import flask_cors
 
 from pose_registry import resolve, list_commands
@@ -22,6 +22,8 @@ NAO_SET_POSE_URL = os.environ.get(
     "NAO_SET_POSE_URL",
     "http://naoRobotAPI:5000/setting_pose/setPose",
 )
+
+IMAGES_DIR = os.path.join(os.path.dirname(__file__), "images")
 
 app = Flask(__name__)
 flask_cors.CORS(app)
@@ -58,6 +60,19 @@ def get_pose(pose_name):
         "description": pose["description"],
         "angles": pose["angles"],
     }), 200
+
+
+# ------------------------------------------------------------------ #
+# Serve pose image                                                    #
+# ------------------------------------------------------------------ #
+
+@app.route("/pose/<pose_name>/image", methods=["GET"])
+def get_pose_image(pose_name):
+    """Return the PNG image for a named pose, or 404 if not available."""
+    filename = f"{pose_name}.png"
+    if not os.path.isfile(os.path.join(IMAGES_DIR, filename)):
+        return jsonify({"error": f"no image for pose '{pose_name}'"}), 404
+    return send_from_directory(IMAGES_DIR, filename, mimetype="image/png")
 
 
 # ------------------------------------------------------------------ #

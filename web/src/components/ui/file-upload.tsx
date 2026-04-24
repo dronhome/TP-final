@@ -120,7 +120,7 @@ export const FileUpload = ({
                       layout
                     >
                       modified{" "}
-                      {new Date(file.lastModified).toLocaleDateString()}
+                      {new Date(file.lastModified).toLocaleDateString("sk-SK")}
                     </motion.p>
                   </div>
                 </motion.div>

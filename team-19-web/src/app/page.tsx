@@ -31,14 +31,20 @@ const DOCS = {
     ],
     // ── Letný semester ────────────────────────────────────────────────────────
     minutes_summer: [
-        { label: "Zápisnica 1", href: "/docs/minutes/letny/zapisnica 1.pdf" },
-        { label: "Zápisnica 2", href: "/docs/minutes/letny/zapisnica 2.pdf" },
-        { label: "Zápisnica 3", href: "/docs/minutes/letny/zapisnica 3.pdf" },
+        { label: "Zápisnica – Sprint 1", href: "/docs/minutes/letny/zapisnica sprint 1.pdf" },
+        { label: "Zápisnica – Sprint 2", href: "/docs/minutes/letny/zapisnica sprint 2.pdf" },
+        { label: "Zápisnica – Sprint 3", href: "/docs/minutes/letny/zapisnica sprint 3.pdf" },
+        { label: "Zápisnica – Sprint 4", href: "/docs/minutes/letny/zapisnica sprint 4.pdf" },
     ],
     backlog_summer: [
         { label: "Backlog report", href: "/docs/backlog/letny/backlog-report.pdf" },
     ],
-    retrospective_summer: [] as { label: string; href: string }[],
+    retrospective_summer: [
+        { label: "Retrospektíva – Sprint 1", href: "/docs/retrospectives/letny/Retrospektiva_Sprint1.pdf" },
+        { label: "Retrospektíva – Sprint 2", href: "/docs/retrospectives/letny/Retrospektiva_Sprint2.pdf" },
+        { label: "Retrospektíva – Sprint 3", href: "/docs/retrospectives/letny/Retrospektiva_Sprint3.pdf" },
+        { label: "Retrospektíva – Sprint 4", href: "/docs/retrospectives/letny/Retrospektiva_Sprint4.pdf" },
+    ] as { label: string; href: string }[],
     // ── Bez semestra ─────────────────────────────────────────────────────────
     methodologies: [
         { label: "Metodika komunikácie", href: "/docs/methodologies/Metodika-komunikácie.pdf " },
@@ -457,7 +463,7 @@ function Documents() {
             </div>
 
             {/* LETNÝ SEMESTER */}
-            <div className="mt-5 rounded-2xl border border-[#ede9fe] border-dashed bg-white/30 p-6">
+            <div className="mt-5 rounded-2xl border border-[#ede9fe] bg-white/60 p-6">
                 <SemesterLabel>Letný semester</SemesterLabel>
 
                 <section id="minutes_summer">

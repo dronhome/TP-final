@@ -4,7 +4,7 @@
 
 REGISTRY ?= berserkchmonya
 TAG ?= latest
-SERVICES = web team19-web nao-robot-api skeleton-finder-api translator exercise-config-service
+SERVICES = web team19-web nao-robot-api skeleton-finder-api translator voice-command-api exercise-config-service
 
 # ------------------------------------------
 #          HELP (auto-generated)
@@ -22,11 +22,21 @@ help:  ## Show this help message
 # ------------------------------------------
 build-all: ## Build all Docker images
 	@echo "Building all Docker images..."
-	docker-compose -f docker-compose.build.yml build
+	docker compose -f docker-compose.build.yml build
 
 build-%: ## Build a single service (usage: make build-web)
 	@echo "Building $*..."
-	docker-compose -f docker-compose.build.yml build $*
+	docker compose -f docker-compose.build.yml build $*
+
+rebuild-all: ## Rebuild all images from scratch (no cache) and restart
+	@echo "Rebuilding all Docker images (no cache)..."
+	docker compose -f docker-compose.build.yml build --no-cache
+	docker compose -f docker-compose.dev.yml up -d
+
+rebuild-%: ## Rebuild a single service from scratch (usage: make rebuild-web)
+	@echo "Rebuilding $* (no cache)..."
+	docker compose -f docker-compose.build.yml build --no-cache $*
+	docker compose -f docker-compose.dev.yml up -d $*
 
 push-all: ## Push all images to registry
 	@echo "Pushing images to registry..."
@@ -52,7 +62,7 @@ check-images: ## Check if all local images exist
 # ------------------------------------------
 dev-up: build-all ## Start development environment (build + run)
 	@echo "Starting development environment..."
-	docker-compose -f docker-compose.dev.yml up -d
+	docker compose -f docker-compose.dev.yml up -d
 	@echo ""
 	@echo "🌐 Services:"
 	@echo "  - web:                http://localhost:8080"
@@ -63,19 +73,19 @@ dev-up: build-all ## Start development environment (build + run)
 
 dev-up-%: build-% ## Start only one dev service (usage: make dev-up-web)
 	@echo "Starting development environment for $*..."
-	docker-compose -f docker-compose.dev.yml up -d $*
+	docker compose -f docker-compose.dev.yml up -d $*
 	@echo ""
 	@echo "Service $* started"
 
 dev-logs-%: ## Show logs for one service (usage: make dev-logs-web)
-	docker-compose -f docker-compose.dev.yml logs -f $*
+	docker compose -f docker-compose.dev.yml logs -f $*
 
 dev-down: ## Stop development environment
 	@echo "Stopping development environment..."
-	docker-compose -f docker-compose.dev.yml down
+	docker compose -f docker-compose.dev.yml down
 
 dev-logs: ## Show dev logs (real-time)
-	docker-compose -f docker-compose.dev.yml logs -f
+	docker compose -f docker-compose.dev.yml logs -f
 
 dev-restart: dev-down dev-up ## Restart dev environment
 
@@ -96,7 +106,7 @@ test: ## Test all services locally
 # ------------------------------------------
 clean: ## Remove all containers + volumes + images
 	@echo "Cleaning up..."
-	docker-compose -f docker-compose.dev.yml down -v
+	docker compose -f docker-compose.dev.yml down -v
 	@for service in $(SERVICES); do \
 		image=$(REGISTRY)/$$service:$(TAG); \
 		echo "Removing image $$image"; \
@@ -106,7 +116,7 @@ clean: ## Remove all containers + volumes + images
 
 status: ## Show running Docker Compose services
 	@echo "=== Running Containers ==="
-	@docker-compose -f docker-compose.dev.yml ps
+	@docker compose -f docker-compose.dev.yml ps
 
 # ------------------------------------------
 #               KUBERNETES
@@ -118,6 +128,8 @@ k8s-deploy: build-all ## Deploy all services to Kubernetes
 	@kubectl wait --for=condition=available deployment/team19-web-deployment --timeout=120s 2>/dev/null || true
 	@kubectl wait --for=condition=available deployment/naorobotapi-deployment --timeout=120s 2>/dev/null || true
 	@kubectl wait --for=condition=available deployment/skeletonfinderapi-deployment --timeout=120s 2>/dev/null || true
+	@kubectl wait --for=condition=available deployment/voicecommandapi-deployment --timeout=120s 2>/dev/null || true
+	@kubectl wait --for=condition=available deployment/exercise-config-service-deployment --timeout=120s 2>/dev/null || true
 	@echo "k8s deploy done"
 
 k8s-delete: ## Delete all Kubernetes resources
@@ -129,6 +141,8 @@ k8s-logs: ## Print logs from all Kubernetes pods
 	@kubectl logs -l app=team19-web --tail=100 || true
 	@kubectl logs -l app=naorobotapi --tail=100 || true
 	@kubectl logs -l app=skeletonfinderapi --tail=100 || true
+	@kubectl logs -l app=voicecommandapi --tail=100 || true
+	@kubectl logs -l app=exercise-config-service --tail=100 || true
 
 k8s-status: ## Show status of all Kubernetes pods/services
 	@kubectl get nodes || true
@@ -142,3 +156,5 @@ k8s-restart: ## Restart all Kubernetes deployments
 	@kubectl rollout restart deployment team19-web-deployment || true
 	@kubectl rollout restart deployment naorobotapi-deployment || true
 	@kubectl rollout restart deployment skeletonfinderapi-deployment || true
+	@kubectl rollout restart deployment voicecommandapi-deployment || true
+	@kubectl rollout restart deployment exercise-config-service-deployment || true

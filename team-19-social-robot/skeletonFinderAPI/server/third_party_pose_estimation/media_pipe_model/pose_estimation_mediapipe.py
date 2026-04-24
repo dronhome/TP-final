@@ -115,8 +115,6 @@ def evaluate_pose_from_video_mediapipe(source: str, min_detection_confidence: fl
                                                               attach_visualization):
                         yield image_config
                     frame_count += 1
-                    if processed > 6:
-                        break
                     processed = processed + 1
 
             else:

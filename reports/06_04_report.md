@@ -113,3 +113,6 @@ commit 3493761
 Branch: kandr-2
 Files changed: 10
 ```
+
+
+    claude --resume 564bcc83-dc3f-4d94-8580-323b21175985

@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: exercise-config-service-deployment
+  labels:
+    app: exercise-config-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: exercise-config-service
+  template:
+    metadata:
+      labels:
+        app: exercise-config-service
+    spec:
+      containers:
+        - name: exercise-config-service
+          image: berserkchmonya/exercise-config-service:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 7001
+          env:
+            - name: FLASK_ENV
+              value: "production"
+            - name: EXERCISES_DIR
+              value: "/service/exercises"
+            - name: VOICE_COMMAND_API_URL
+              value: "http://voicecommandapi:8000"
+          volumeMounts:
+            - name: exercises
+              mountPath: /service/exercises
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 7001
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 7001
+            initialDelaySeconds: 30
+            periodSeconds: 30
+      volumes:
+        - name: exercises
+          persistentVolumeClaim:
+            claimName: exercises-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: exercise-config-service
+spec:
+  selector:
+    app: exercise-config-service
+  type: ClusterIP
+  ports:
+    - port: 7001
+      targetPort: 7001

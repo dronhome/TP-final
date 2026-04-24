@@ -418,8 +418,9 @@ def exercise_from_video():
     try:
         fps = int(request.form.get("fps", "1"))
         seconds = int(request.form.get("seconds", "-1"))
+        max_frames = int(request.form.get("max_frames", "-1"))
     except ValueError:
-        return jsonify({"error": "fps and seconds must be integers"}), 400
+        return jsonify({"error": "fps, seconds, and max_frames must be integers"}), 400
 
     try:
         video_bytes = file.read()
@@ -446,6 +447,12 @@ def exercise_from_video():
 
     if summary["valid_frames"] == 0:
         return jsonify({"error": "no valid frames found in video"}), 422
+
+    # apply max_frames cap
+    if max_frames > 0:
+        summary["valid_landmarks"]   = summary["valid_landmarks"][:max_frames]
+        summary["valid_image_paths"] = summary["valid_image_paths"][:max_frames]
+        summary["valid_frames"]      = len(summary["valid_landmarks"])
 
     # 2) Translate each frame landmarks → NAO angles
     frames = []

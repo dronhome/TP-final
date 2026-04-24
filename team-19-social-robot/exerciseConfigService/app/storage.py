@@ -201,6 +201,8 @@ def list_exercises() -> list:
                 "created_at": cfg.get("created_at", ""),
                 "pose_engine": cfg.get("pose_engine", ""),
                 "repetitions": cfg.get("repetitions", 1),
+                "calories": cfg.get("calories"),
+                "description": cfg.get("description"),
             })
         except (json.JSONDecodeError, KeyError):
             continue
@@ -216,9 +218,10 @@ def delete_exercise(exercise_id: str) -> None:
     shutil.rmtree(exercise_dir(exercise_id))
 
 
-def update_config(exercise_id: str, name: str = None, repetitions: int = None) -> dict:
+def update_config(exercise_id: str, name: str = None, repetitions: int = None,
+                  calories: float = None, description: str = None) -> dict:
     """
-    Update name and/or repetitions in config.json.
+    Update name, repetitions, calorie estimate, and/or description in config.json.
     Returns the updated config dict.
     """
     if not exercise_exists(exercise_id):
@@ -229,6 +232,10 @@ def update_config(exercise_id: str, name: str = None, repetitions: int = None) -
         cfg["name"] = name
     if repetitions is not None:
         cfg["repetitions"] = repetitions
+    if calories is not None:
+        cfg["calories"] = calories
+    if description is not None:
+        cfg["description"] = description
     _write_json(config_path(exercise_id), cfg)
     return cfg
 
@@ -394,6 +401,10 @@ def delete_frame(exercise_id: str, frame_index: int) -> dict:
         raise FileNotFoundError(f"Frame {frame_index} not found in exercise '{exercise_id}'")
 
     os.remove(path)
+
+    img_path = frame_image_path(exercise_id, frame_index)
+    if os.path.isfile(img_path):
+        os.remove(img_path)
 
     cfg = _read_json(config_path(exercise_id))
     cfg["frame_sequence"] = [i for i in cfg["frame_sequence"] if i != frame_index]

@@ -129,12 +129,21 @@ def patch_config(exercise_id):
     data = request.get_json(silent=True) or {}
     name = data.get("name")
     repetitions = data.get("repetitions")
+    calories = data.get("calories")
+    description = data.get("description")
 
     if repetitions is not None:
         if not isinstance(repetitions, int) or repetitions < 1:
             return jsonify({"error": "'repetitions' must be a positive integer"}), 400
+    if calories is not None:
+        try:
+            calories = float(calories)
+        except (TypeError, ValueError):
+            return jsonify({"error": "'calories' must be a number"}), 400
+    if description is not None:
+        description = str(description)[:500]
 
-    cfg = update_config(exercise_id, name=name, repetitions=repetitions)
+    cfg = update_config(exercise_id, name=name, repetitions=repetitions, calories=calories, description=description)
     return jsonify(cfg), 200
 
 

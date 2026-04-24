@@ -47,7 +47,7 @@ services:
       HOST_PORT: ${HOST_PORT:-1234}
       HOST_IP: ${HOST_IP:-127.0.0.1}
       NAO_PORT: ${NAO_PORT:-9559}
-      NAO_IP: 10.62.44.100
+      NAO_IP: host.docker.internal
       FLASK_ENV: development
     networks:
       - appnet
@@ -106,6 +106,8 @@ services:
       NAO_SET_POSE_URL: http://naorobotapi:5000/setting_pose/setPose
     depends_on:
       - naorobotapi
+    volumes:
+      - ./team-19-social-robot/voiceCommandAPI:/app
     networks:
       - appnet
 
@@ -126,7 +128,7 @@ services:
     depends_on:
       - voicecommandapi
     volumes:
-      - ./data/exercises:/service/exercises
+      - /home/ubuntu/exercises:/service/exercises
     networks:
       - appnet
 
