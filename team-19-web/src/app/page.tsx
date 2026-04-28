@@ -35,6 +35,7 @@ const DOCS = {
         { label: "Zápisnica – Sprint 2", href: "/docs/minutes/letny/zapisnica sprint 2.pdf" },
         { label: "Zápisnica – Sprint 3", href: "/docs/minutes/letny/zapisnica sprint 3.pdf" },
         { label: "Zápisnica – Sprint 4", href: "/docs/minutes/letny/zapisnica sprint 4.pdf" },
+        { label: "Zápisnica – Sprint 5", href: "/docs/minutes/letny/zapisnica sprint 5.pdf" },
     ],
     backlog_summer: [
         { label: "Backlog report", href: "/docs/backlog/letny/backlog-report.pdf" },
@@ -44,6 +45,7 @@ const DOCS = {
         { label: "Retrospektíva – Sprint 2", href: "/docs/retrospectives/letny/Retrospektiva_Sprint2.pdf" },
         { label: "Retrospektíva – Sprint 3", href: "/docs/retrospectives/letny/Retrospektiva_Sprint3.pdf" },
         { label: "Retrospektíva – Sprint 4", href: "/docs/retrospectives/letny/Retrospektiva_Sprint4.pdf" },
+        { label: "Retrospektíva – Sprint 5", href: "/docs/retrospectives/letny/Retrospektiva_Sprint5.pdf" },
     ] as { label: string; href: string }[],
     // ── Bez semestra ─────────────────────────────────────────────────────────
     methodologies: [
