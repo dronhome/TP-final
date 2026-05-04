@@ -5,7 +5,7 @@ metadata:
 spec:
   type: LoadBalancer 
   selector:
-    app: web
+    app: team19-web
   ports:
     - port: 3000
       targetPort: 3000

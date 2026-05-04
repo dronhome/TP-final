@@ -29,8 +29,14 @@ services:
       dockerfile: Dockerfile
     image: ${REGISTRY:-berserkchmonya}/translator:${TAG:-latest}
 
+  voice-command-api:
+    build:
+      context: ./team-19-social-robot/voiceCommandAPI
+      dockerfile: Dockerfile
+    image: ${REGISTRY:-berserkchmonya}/voice-command-api:${TAG:-latest}
+
   exercise-config-service:
     build:
-      context: ./team-19-social-robot/ExerciseConfigService
+      context: ./team-19-social-robot/exerciseConfigService
       dockerfile: Dockerfile
     image: ${REGISTRY:-berserkchmonya}/exercise-config-service:${TAG:-latest}

@@ -17,7 +17,7 @@ spec:
       containers:
       - name: skeletonfinderapi
         image: berserkchmonya/skeleton-finder-api:latest
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 6001
         volumeMounts:

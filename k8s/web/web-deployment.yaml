@@ -17,7 +17,7 @@ spec:
       containers:
         - name: web
           image: berserkchmonya/web:latest
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 80
           readinessProbe:

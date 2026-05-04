@@ -17,7 +17,7 @@ spec:
       containers:
         - name: team19-web
           image: berserkchmonya/team19-web:latest
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 3000
           readinessProbe:

@@ -17,7 +17,7 @@ spec:
       containers:
       - name: naorobotapi
         image: berserkchmonya/nao-robot-api:latest
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 5000
         volumeMounts:
@@ -26,6 +26,16 @@ spec:
         env:
         - name: FLASK_ENV
           value: "production"
+        - name: HOST_PORT
+          value: "1234"
+        - name: HOST_IP
+          value: "127.0.0.1"
+        - name: NAO_PORT
+          value: "9559"
+        - name: NAO_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.hostIP
         readinessProbe:
           httpGet:
             path: /

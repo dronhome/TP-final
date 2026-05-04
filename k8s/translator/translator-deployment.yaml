@@ -25,9 +25,14 @@ spec:
             - name: pictures
               mountPath: /home/ubuntu/Pictures
           image: berserkchmonya/translator:latest
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           ports:
           - containerPort: 7000
+          env:
+            - name: FLASK_ENV
+              value: "production"
+            - name: EXERCISE_CONFIG_URL
+              value: "http://exercise-config-service:7001"
           readinessProbe:
             httpGet:
               path: /test
