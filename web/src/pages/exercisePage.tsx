@@ -1,7 +1,7 @@
 import { Header } from "../components/layout/header";
 import { StatsCard } from "../components/exercise/statsCard";
 import { ExerciseControls } from "../components/exercise/exerciseControls";
-import { ProgressBar } from "../components/exercise/progressBar";
+import { ProgressBar } from "../components/exercise/ProgressBar";
 import { BottomNav } from "../components/layout/bottomNav";
 
 export default function TestPage() {

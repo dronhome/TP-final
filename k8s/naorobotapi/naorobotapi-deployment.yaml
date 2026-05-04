@@ -17,7 +17,7 @@ spec:
       containers:
       - name: naorobotapi
         image: berserkchmonya/nao-robot-api:latest
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 5000
         volumeMounts:

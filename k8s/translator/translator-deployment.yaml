@@ -25,7 +25,7 @@ spec:
             - name: pictures
               mountPath: /home/ubuntu/Pictures
           image: berserkchmonya/translator:latest
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           ports:
           - containerPort: 7000
           env:

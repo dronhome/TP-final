@@ -42,16 +42,20 @@ export default function SimpleUploadPage() {
       const isImage = file.type.startsWith("image/");
       if (!isVideo && !isImage) throw new Error("Nahrajte platný video alebo obrázkový súbor");
 
+      const exerciseName = file.name.replace(/\.[^/.]+$/, "");
       const formData = new FormData();
       if (isVideo) {
         formData.append("video", file);
+        formData.append("name", exerciseName);
         formData.append("fps", "1");
         formData.append("seconds", "-1");
       } else {
         formData.append("image", file);
+        formData.append("name", exerciseName);
       }
 
-      const response = await fetch(isVideo ? `${API_BASE_URL}/arms/from_video` : `${API_BASE_URL}/arms/from_image`, {
+      const url = isVideo ? "/exercise/from_video" : `${API_BASE_URL}/exercise/from_image`;
+      const response = await fetch(url, {
         method: "POST",
         body: formData,
       });
@@ -64,7 +68,7 @@ export default function SimpleUploadPage() {
         throw new Error(`Chyba servera (${response.status}): ${details.join(" | ") || response.statusText}`);
       }
 
-      setUploadStatus({ type: "success", message: `${isVideo ? "Video" : "Obrázok"} úspešne nahraný!` });
+      setUploadStatus({ type: "success", message: `Cvičenie "${exerciseName}" bolo úspešne vytvorené!` });
     } catch (error) {
       setUploadStatus({ type: "error", message: error instanceof Error ? error.message : "Nahranie súboru zlyhalo" });
     } finally {

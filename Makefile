@@ -38,7 +38,7 @@ rebuild-%: ## Rebuild a single service from scratch (usage: make rebuild-web)
 	docker compose -f docker-compose.build.yml build --no-cache $*
 	docker compose -f docker-compose.dev.yml up -d $*
 
-push-all: ## Push all images to registry
+push-all: ## Push all images to registry (run build-all first if needed)
 	@echo "Pushing images to registry..."
 	@for service in $(SERVICES); do \
 		image=$(REGISTRY)/$$service:$(TAG); \
@@ -64,7 +64,7 @@ dev-start: ## Start dev environment from existing images (no build)
 	docker compose -f docker-compose.dev.yml up -d
 	@echo ""
 	@echo "🌐 Services:"
-	@echo "  - web:                http://localhost:8080"
+	@echo "  - web:                http://localhost:8090"
 	@echo "  - team19-web:         http://localhost:3000"
 	@echo "  - nao-robot-api:      http://localhost:5000"
 	@echo "  - skeleton-finder-api: http://localhost:6001"
@@ -80,7 +80,7 @@ dev-up: build-all ## Start development environment (build + run)
 	docker compose -f docker-compose.dev.yml up -d
 	@echo ""
 	@echo "🌐 Services:"
-	@echo "  - web:                http://localhost:8080"
+	@echo "  - web:                http://localhost:8090"
 	@echo "  - team19-web:         http://localhost:3000"
 	@echo "  - nao-robot-api:      http://localhost:5000"
 	@echo "  - skeleton-finder-api: http://localhost:6001"
@@ -111,7 +111,7 @@ dev-restart: dev-down dev-up ## Restart dev environment
 # ------------------------------------------
 test: ## Test all services locally
 	@echo "Testing services..."
-	@curl -sSf http://localhost:8080/ >/dev/null && echo "✓ web (8080)" || echo "✗ web"
+	@curl -sSf http://localhost:8090/ >/dev/null && echo "✓ web (8080)" || echo "✗ web"
 	@curl -sSf http://localhost:3000/ >/dev/null && echo "✓ team19-web (3000)" || echo "✗ team19-web"
 	@curl -sSf http://localhost:5000/ >/dev/null && echo "✓ nao-robot-api (5000)" || echo "✗ nao-robot-api"
 	@curl -sSf http://localhost:6001/ >/dev/null && echo "✓ skeleton-finder-api (6001)" || echo "✗ skeleton-finder-api"
@@ -139,7 +139,19 @@ status: ## Show running Docker Compose services
 # ------------------------------------------
 #               KUBERNETES
 # ------------------------------------------
-k8s-deploy: build-all ## Deploy all services to Kubernetes
+k8s-apply: ## Apply k8s manifests without pushing (use local images)
+	@echo "Applying k8s manifests..."
+	kubectl apply -R -f k8s/
+	@kubectl wait --for=condition=available deployment/web-deployment --timeout=120s 2>/dev/null || true
+	@kubectl wait --for=condition=available deployment/team19-web-deployment --timeout=120s 2>/dev/null || true
+	@kubectl wait --for=condition=available deployment/naorobotapi-deployment --timeout=120s 2>/dev/null || true
+	@kubectl wait --for=condition=available deployment/skeletonfinderapi-deployment --timeout=120s 2>/dev/null || true
+	@kubectl wait --for=condition=available deployment/translatorapi-deployment --timeout=120s 2>/dev/null || true
+	@kubectl wait --for=condition=available deployment/voicecommandapi-deployment --timeout=120s 2>/dev/null || true
+	@kubectl wait --for=condition=available deployment/exercise-config-service-deployment --timeout=120s 2>/dev/null || true
+	@echo "k8s apply done"
+
+k8s-deploy: push-all ## Push images and deploy all services to Kubernetes
 	@echo "Deploying to Kubernetes..."
 	kubectl apply -R -f k8s/
 	@kubectl wait --for=condition=available deployment/web-deployment --timeout=120s 2>/dev/null || true
@@ -160,6 +172,7 @@ k8s-logs: ## Print logs from all Kubernetes pods
 	@kubectl logs -l app=team19-web --tail=100 || true
 	@kubectl logs -l app=naorobotapi --tail=100 || true
 	@kubectl logs -l app=skeletonfinderapi --tail=100 || true
+	@kubectl logs -l app=translator --tail=100 || true
 	@kubectl logs -l app=voicecommandapi --tail=100 || true
 	@kubectl logs -l app=exercise-config-service --tail=100 || true
 
