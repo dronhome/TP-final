@@ -20,7 +20,7 @@ from pose_registry import resolve, list_commands
 
 NAO_SET_POSE_URL = os.environ.get(
     "NAO_SET_POSE_URL",
-    "http://naoRobotAPI:5000/setting_pose/setPose",
+    "http://naorobotapi:5000/setting_pose/setPose",
 )
 
 IMAGES_DIR = os.path.join(os.path.dirname(__file__), "images")

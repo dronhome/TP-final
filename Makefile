@@ -60,6 +60,21 @@ check-images: ## Check if all local images exist
 # ------------------------------------------
 #     DEVELOPMENT (Docker Compose)
 # ------------------------------------------
+dev-start: ## Start dev environment from existing images (no build)
+	docker compose -f docker-compose.dev.yml up -d
+	@echo ""
+	@echo "🌐 Services:"
+	@echo "  - web:                http://localhost:8080"
+	@echo "  - team19-web:         http://localhost:3000"
+	@echo "  - nao-robot-api:      http://localhost:5000"
+	@echo "  - skeleton-finder-api: http://localhost:6001"
+	@echo "  - translator:         http://localhost:7000"
+	@echo "  - voice-command-api:  http://localhost:8000"
+	@echo "  - exercise-config:    http://localhost:7001"
+
+dev-start-%: ## Start a single service from existing image (usage: make dev-start-web)
+	docker compose -f docker-compose.dev.yml up -d $*
+
 dev-up: build-all ## Start development environment (build + run)
 	@echo "Starting development environment..."
 	docker compose -f docker-compose.dev.yml up -d
@@ -70,6 +85,8 @@ dev-up: build-all ## Start development environment (build + run)
 	@echo "  - nao-robot-api:      http://localhost:5000"
 	@echo "  - skeleton-finder-api: http://localhost:6001"
 	@echo "  - translator:         http://localhost:7000"
+	@echo "  - voice-command-api:  http://localhost:8000"
+	@echo "  - exercise-config:    http://localhost:7001"
 
 dev-up-%: build-% ## Start only one dev service (usage: make dev-up-web)
 	@echo "Starting development environment for $*..."
@@ -99,6 +116,7 @@ test: ## Test all services locally
 	@curl -sSf http://localhost:5000/ >/dev/null && echo "✓ nao-robot-api (5000)" || echo "✗ nao-robot-api"
 	@curl -sSf http://localhost:6001/ >/dev/null && echo "✓ skeleton-finder-api (6001)" || echo "✗ skeleton-finder-api"
 	@curl -sSf http://localhost:7000/test >/dev/null && echo "✓ translator (7000)" || echo "✗ translator"
+	@curl -sSf http://localhost:8000/ >/dev/null && echo "✓ voice-command-api (8000)" || echo "✗ voice-command-api"
 	@curl -sSf http://localhost:7001/health >/dev/null && echo "✓ exercise-config-service (7001)" || echo "✗ exercise-config-service"
 
 # ------------------------------------------
@@ -128,6 +146,7 @@ k8s-deploy: build-all ## Deploy all services to Kubernetes
 	@kubectl wait --for=condition=available deployment/team19-web-deployment --timeout=120s 2>/dev/null || true
 	@kubectl wait --for=condition=available deployment/naorobotapi-deployment --timeout=120s 2>/dev/null || true
 	@kubectl wait --for=condition=available deployment/skeletonfinderapi-deployment --timeout=120s 2>/dev/null || true
+	@kubectl wait --for=condition=available deployment/translatorapi-deployment --timeout=120s 2>/dev/null || true
 	@kubectl wait --for=condition=available deployment/voicecommandapi-deployment --timeout=120s 2>/dev/null || true
 	@kubectl wait --for=condition=available deployment/exercise-config-service-deployment --timeout=120s 2>/dev/null || true
 	@echo "k8s deploy done"

@@ -113,7 +113,7 @@ services:
 
   exercise-config-service:
     build:
-      context: ./team-19-social-robot/ExerciseConfigService
+      context: ./team-19-social-robot/exerciseConfigService
       dockerfile: Dockerfile
     image: ${REGISTRY:-berserkchmonya}/exercise-config-service:${TAG:-latest}
     command: python run.py
