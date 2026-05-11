@@ -19,7 +19,6 @@ COPY . /naoRobotAPI
 ENV PYTHONPATH=${PYTHONPATH}:/pynaoqi
 
 WORKDIR /naoRobotAPI
-RUN ./.bashrc
 #RUN apt-get -y update
 RUN apt-get install -y python-simplegeneric
 
