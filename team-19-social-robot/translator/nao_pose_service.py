@@ -25,7 +25,7 @@ from video_pose_processor import process_video_bytes
 
 POSE_API_URL = "http://skeletonfinderapi:6001/media_pipe_pose/pose_from_image"
 SET_POSE_URL = "http://naorobotapi:5000/setting_pose/setPose"
-EXERCISE_CONFIG_URL = os.environ.get("EXERCISE_CONFIG_URL", "http://exerciseconfigservice:7001")
+EXERCISE_CONFIG_URL = os.environ.get("EXERCISE_CONFIG_URL", "http://exercise-config-service:7001")
 
 # Host directory mounted into pose container as /images
 POSE_HOST_ROOT = "/home/ubuntu/Pictures"      # host/VM path
