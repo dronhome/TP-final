@@ -26,6 +26,10 @@ spec:
         env:
         - name: FLASK_ENV
           value: "production"
+        - name: NAO_IP
+          value: "10.62.44.100"
+        - name: NAO_PORT
+          value: "9559"
         readinessProbe:
           httpGet:
             path: /
