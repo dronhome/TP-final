@@ -56,4 +56,4 @@ The system is a **microservices application** — 7 independent services, each i
 - **exerciseConfigService** uses a **PersistentVolumeClaim** (2Gi) so exercise data survives pod restarts
 - The web Nginx ConfigMap routes all `/api/*` paths to the correct k8s service DNS names
 - `make k8s-deploy` applies all manifests; `make k8s-logs` / `make k8s-restart` for operations
-- Images are pushed to Docker Hub (`berserkchmonya/*`) and pulled by k8s at deploy time
+- Images are pushed to Docker Hub (`dronhome13/*`) and pulled by k8s at deploy time

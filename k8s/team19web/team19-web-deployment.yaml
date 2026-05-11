@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: team19-web
-          image: berserkchmonya/team19-web:latest
+          image: dronhome13/team19-web:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 3000

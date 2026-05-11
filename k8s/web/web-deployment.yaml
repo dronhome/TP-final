@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: web
-          image: berserkchmonya/web:latest
+          image: dronhome13/web:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 80

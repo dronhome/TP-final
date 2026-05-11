@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: naorobotapi
-        image: berserkchmonya/nao-robot-api:latest
+        image: dronhome13/nao-robot-api:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 5000

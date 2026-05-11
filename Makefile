@@ -2,7 +2,7 @@
 # Makefile for Multi-Service Project
 # ==========================================
 
-REGISTRY ?= berserkchmonya
+REGISTRY ?= dronhome13
 TAG ?= latest
 SERVICES = web team19-web nao-robot-api skeleton-finder-api translator voice-command-api exercise-config-service
 

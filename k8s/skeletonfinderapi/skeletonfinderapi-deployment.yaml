@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: skeletonfinderapi
-        image: berserkchmonya/skeleton-finder-api:latest
+        image: dronhome13/skeleton-finder-api:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 6001

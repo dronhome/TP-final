@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: voicecommandapi
-          image: berserkchmonya/voice-command-api:latest
+          image: dronhome13/voice-command-api:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 8000

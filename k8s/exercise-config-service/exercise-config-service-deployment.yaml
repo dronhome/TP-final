@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: exercise-config-service
-          image: berserkchmonya/exercise-config-service:latest
+          image: dronhome13/exercise-config-service:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 7001
