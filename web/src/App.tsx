@@ -8,6 +8,7 @@ import SimpleUploadPage from "./pages/simpleUploadPage";
 import VoiceCommandPage from "./pages/voiceCommandPage";
 import { SideNav } from "./components/layout/sideNav";
 import { BottomNav } from "./components/layout/bottomNav";
+import { Toaster } from "./components/ui/toaster";
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
         </Routes>
       </div>
       <BottomNav />
+      <Toaster />
     </div>
   );
 }

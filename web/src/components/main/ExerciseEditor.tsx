@@ -3,15 +3,13 @@ import { useSearchParams } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { toast } from "@/components/ui/toaster";
 import {
   Loader2,
   Upload,
   Play,
   Trash2,
   GripVertical,
-  AlertCircle,
-  CheckCircle,
   Film,
   ChevronLeft,
   ChevronRight,
@@ -19,6 +17,7 @@ import {
   MicOff,
   X,
   Pencil,
+  CheckCircle,
 } from "lucide-react";
 
 // ── pose display names (Slovak) ───────────────────────────────────
@@ -56,8 +55,6 @@ type PoseCommand = {
   name: string;
 };
 
-type StatusMsg = { type: "success" | "error" | "info"; text: string } | null;
-
 // ── drag-reorder hook ─────────────────────────────────────────────
 function useDragReorder<T>(
   items: T[],
@@ -94,7 +91,6 @@ export default function ExerciseEditor() {
   const [exerciseId, setExerciseId]   = useState<string | null>(searchParams.get("id"));
   const [frames, setFrames]           = useState<Frame[]>([]);
   const [poses, setPoses]             = useState<PoseCommand[]>([]);
-  const [status, setStatus]           = useState<StatusMsg>(null);
   const [uploading, setUploading]     = useState(false);
   const [fps, setFps]                 = useState(1);
   const [maxFrames, setMaxFrames]     = useState(8);
@@ -139,21 +135,15 @@ export default function ExerciseEditor() {
       .catch(() => {/* poses not critical at startup */});
   }, []);
 
-  const showStatus = (type: "success" | "error" | "info", text: string) => {
-    setStatus({ type, text });
-    if (type !== "error") setTimeout(() => setStatus(null), 4000);
-  };
-
   // ── upload video ──────────────────────────────────────────────
   // POST /exercise/from_video  (multipart, field "video")
   // Returns the saved exercise config — extract id from it.
   const handleUpload = useCallback(async (file: File) => {
     if (!file.type.startsWith("video/")) {
-      showStatus("error", "Prosím vyberte video súbor.");
+      toast("Prosím vyberte video súbor.", "error");
       return;
     }
     setUploading(true);
-    setStatus(null);
     setFrames([]);
     setExerciseId(null);
 
@@ -171,10 +161,10 @@ export default function ExerciseEditor() {
       const data = await res.json();
       const id = data.id ?? data.exercise_id ?? data.exerciseId ?? String(data);
       setExerciseId(id);
-      showStatus("info", `Cvičenie vytvorené. Načítavam snímky…`);
+      toast("Cvičenie vytvorené. Načítavam snímky…", "info");
       await loadFrames(id);
     } catch (err) {
-      showStatus("error", err instanceof Error ? err.message : "Nahranie zlyhalo");
+      toast(err instanceof Error ? err.message : "Nahranie zlyhalo", "error");
     } finally {
       setUploading(false);
     }
@@ -236,10 +226,12 @@ export default function ExerciseEditor() {
           else generateDescription(id, normalised);
         })
         .catch(() => {});
-      showStatus("success", `Načítaných ${normalised.length} snímok.`);
+      const n = normalised.length;
+      const snimok = n === 1 ? "snímok" : n <= 4 ? "snímky" : "snímkov";
+      toast(`Načítaných ${n} ${snimok}.`, "success");
       return normalised;
     } catch (err) {
-      showStatus("error", err instanceof Error ? err.message : "Načítanie snímok zlyhalo");
+      toast(err instanceof Error ? err.message : "Načítanie snímok zlyhalo", "error");
       return [];
     } finally {
       setLoadingFrames(false);
@@ -322,9 +314,9 @@ export default function ExerciseEditor() {
         setPoseFrameMap((prev) => ({ ...prev, [newFrame.idx]: poseName }));
       }
       generateDescription(exerciseId, newFrames);
-      showStatus("success", `Póza "${poseName}" vložená.`);
+      toast(`Póza "${poseName}" vložená.`, "success");
     } catch (err) {
-      showStatus("error", err instanceof Error ? err.message : "Vloženie zlyhalo");
+      toast(err instanceof Error ? err.message : "Vloženie zlyhalo", "error");
     } finally {
       setInsertingAt(null);
     }
@@ -343,9 +335,9 @@ export default function ExerciseEditor() {
       const remaining = frames.filter((f) => f.idx !== frameIdx);
       setFrames(remaining);
       generateDescription(exerciseId, remaining);
-      showStatus("success", "Snímka odstránená.");
+      toast("Snímka odstránená.", "success");
     } catch (err) {
-      showStatus("error", err instanceof Error ? err.message : "Odstránenie zlyhalo");
+      toast(err instanceof Error ? err.message : "Odstránenie zlyhalo", "error");
     } finally {
       setDeletingAt(null);
     }
@@ -364,9 +356,9 @@ export default function ExerciseEditor() {
         body: JSON.stringify({ frame_sequence }),
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      showStatus("success", "Poradie uložené.");
+      toast("Poradie uložené.", "success");
     } catch (err) {
-      showStatus("error", err instanceof Error ? err.message : "Uloženie zlyhalo");
+      toast(err instanceof Error ? err.message : "Uloženie zlyhalo", "error");
     }
   }, [exerciseId, frames]);
 
@@ -382,7 +374,7 @@ export default function ExerciseEditor() {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       setExerciseName(name.trim());
     } catch {
-      showStatus("error", "Premenovanie zlyhalo.");
+      toast("Premenovanie zlyhalo.", "error");
     }
   }, [exerciseId]);
 
@@ -456,9 +448,9 @@ export default function ExerciseEditor() {
         // No body — repetitions defaults to the value stored in the exercise config.
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      showStatus("success", "Cvičenie odoslané robotovi!");
+      toast("Cvičenie dokončené!", "success");
     } catch (err) {
-      showStatus("error", err instanceof Error ? err.message : "Spustenie zlyhalo");
+      toast(err instanceof Error ? err.message : "Spustenie zlyhalo", "error");
     } finally {
       setRunning(false);
     }
@@ -512,23 +504,6 @@ export default function ExerciseEditor() {
         )}
       </div>
 
-      {/* ── status alert ── */}
-      {status && (
-        <Alert
-          variant={status.type === "error" ? "destructive" : "default"}
-          className={
-            status.type === "success" ? "border-green-500 bg-green-50 dark:bg-green-950/20" :
-            status.type === "info"    ? "border-blue-500 bg-blue-50 dark:bg-blue-950/20" : ""
-          }
-        >
-          {status.type === "error"
-            ? <AlertCircle className="h-4 w-4" />
-            : <CheckCircle className="h-4 w-4 text-green-600" />
-          }
-          <AlertDescription>{status.text}</AlertDescription>
-        </Alert>
-      )}
-
       {/* ── voice edit panel ── */}
       {voiceEditOpen && exerciseId && (
         <VoiceEditPanel
@@ -554,7 +529,7 @@ export default function ExerciseEditor() {
             />
           </label>
           <label className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground whitespace-nowrap">Max snímok</span>
+            <span className="text-xs text-muted-foreground whitespace-nowrap">Max snímkov</span>
             <input
               type="number"
               min={1}
@@ -660,7 +635,7 @@ export default function ExerciseEditor() {
 
           <button
             className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors ml-auto"
-            onClick={() => { setExerciseId(null); setFrames([]); setStatus(null); setExerciseName(""); setCalories(null); setDescription(null); }}
+            onClick={() => { setExerciseId(null); setFrames([]); setExerciseName(""); setCalories(null); setDescription(null); }}
           >
             <Upload className="h-3.5 w-3.5" />
             Nahrať iné video
@@ -694,7 +669,7 @@ export default function ExerciseEditor() {
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-              {frames.length} Snímk{frames.length === 1 ? "a" : frames.length < 5 ? "y" : "ok"}
+              {frames.length} {frames.length === 1 ? "snímok" : frames.length <= 4 ? "snímky" : "snímkov"}
               <span className="ml-2 normal-case font-normal">— pretiahnite pre zmenu poradia</span>
             </p>
           </div>

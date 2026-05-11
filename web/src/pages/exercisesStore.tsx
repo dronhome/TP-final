@@ -2,9 +2,9 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { toast } from "@/components/ui/toaster";
 import {
-  Loader2, Play, Trash2, Pencil, Check, X, AlertCircle, CheckCircle, Film,
+  Loader2, Play, Trash2, Pencil, Check, X, Film,
 } from "lucide-react";
 
 const API = "";
@@ -19,22 +19,14 @@ type Exercise = {
   description?: string | null;
 };
 
-type StatusMsg = { type: "success" | "error"; text: string } | null;
-
 export default function ExercisesStore() {
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [loading, setLoading]     = useState(true);
-  const [status, setStatus]       = useState<StatusMsg>(null);
   const [running, setRunning]     = useState<string | null>(null);
   const [deleting, setDeleting]   = useState<string | null>(null);
   const [renaming, setRenaming]   = useState<string | null>(null);
   const [renameVal, setRenameVal] = useState("");
   const navigate = useNavigate();
-
-  const showStatus = (type: "success" | "error", text: string) => {
-    setStatus({ type, text });
-    setTimeout(() => setStatus(null), 3500);
-  };
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -43,7 +35,7 @@ export default function ExercisesStore() {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       setExercises(await res.json());
     } catch {
-      showStatus("error", "Načítanie cvičení zlyhalo.");
+      toast("Načítanie cvičení zlyhalo.", "error");
     } finally {
       setLoading(false);
     }
@@ -57,9 +49,9 @@ setDeleting(id);
       const res = await fetch(`${API}/exercise/${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       setExercises((prev) => prev.filter((e) => e.id !== id));
-      showStatus("success", "Cvičenie odstránené.");
+      toast("Cvičenie odstránené.", "success");
     } catch {
-      showStatus("error", "Odstránenie zlyhalo.");
+      toast("Odstránenie zlyhalo.", "error");
     } finally {
       setDeleting(null);
     }
@@ -70,9 +62,9 @@ setDeleting(id);
     try {
       const res = await fetch(`${API}/exercise/${id}/run`, { method: "POST" });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      showStatus("success", "Cvičenie odoslané robotovi!");
+      toast("Cvičenie dokončené!", "success");
     } catch {
-      showStatus("error", "Spustenie zlyhalo.");
+      toast("Spustenie zlyhalo.", "error");
     } finally {
       setRunning(null);
     }
@@ -95,7 +87,7 @@ setDeleting(id);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       setExercises((prev) => prev.map((e) => e.id === id ? { ...e, name } : e));
     } catch {
-      showStatus("error", "Premenovanie zlyhalo.");
+      toast("Premenovanie zlyhalo.", "error");
     } finally {
       setRenaming(null);
     }
@@ -107,18 +99,6 @@ setDeleting(id);
         <h1 className="text-xl font-semibold tracking-tight text-foreground">Cvičenia</h1>
         <p className="text-xs text-muted-foreground mt-0.5">Všetky uložené cvičenia</p>
       </div>
-
-      {status && (
-        <Alert variant={status.type === "error" ? "destructive" : "default"}
-          className={status.type === "success" ? "border-green-500 bg-green-50 dark:bg-green-950/20" : ""}
-        >
-          {status.type === "error"
-            ? <AlertCircle className="h-4 w-4" />
-            : <CheckCircle className="h-4 w-4 text-green-600" />
-          }
-          <AlertDescription>{status.text}</AlertDescription>
-        </Alert>
-      )}
 
       {loading && (
         <div className="flex justify-center py-16">

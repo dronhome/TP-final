@@ -2,8 +2,8 @@ import { useState, useEffect } from "react";
 import { FileUpload } from "@/components/ui/file-upload";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Loader2, AlertCircle, CheckCircle, X } from "lucide-react";
+import { toast } from "@/components/ui/toaster";
+import { Loader2, X } from "lucide-react";
 
 const API_BASE_URL = "/api";
 
@@ -11,7 +11,6 @@ export default function SimpleUploadPage() {
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
-  const [uploadStatus, setUploadStatus] = useState<{ type: "success" | "error" | null; message: string }>({ type: null, message: "" });
 
   useEffect(() => {
     return () => { if (previewUrl) URL.revokeObjectURL(previewUrl); };
@@ -21,7 +20,6 @@ export default function SimpleUploadPage() {
     if (!files.length) return;
     const selected = files[0];
     setFile(selected);
-    setUploadStatus({ type: null, message: "" });
     if (previewUrl) URL.revokeObjectURL(previewUrl);
     setPreviewUrl(URL.createObjectURL(selected));
   };
@@ -30,13 +28,11 @@ export default function SimpleUploadPage() {
     if (previewUrl) URL.revokeObjectURL(previewUrl);
     setFile(null);
     setPreviewUrl(null);
-    setUploadStatus({ type: null, message: "" });
   };
 
   const sendToBackend = async () => {
-    if (!file) { setUploadStatus({ type: "error", message: "Najprv vyberte súbor" }); return; }
+    if (!file) { toast("Najprv vyberte súbor", "error"); return; }
     setIsUploading(true);
-    setUploadStatus({ type: null, message: "" });
     try {
       const isVideo = file.type.startsWith("video/");
       const isImage = file.type.startsWith("image/");
@@ -64,9 +60,9 @@ export default function SimpleUploadPage() {
         throw new Error(`Chyba servera (${response.status}): ${details.join(" | ") || response.statusText}`);
       }
 
-      setUploadStatus({ type: "success", message: `${isVideo ? "Video" : "Obrázok"} úspešne nahraný!` });
+      toast(`${isVideo ? "Video" : "Obrázok"} úspešne nahraný!`, "success");
     } catch (error) {
-      setUploadStatus({ type: "error", message: error instanceof Error ? error.message : "Nahranie súboru zlyhalo" });
+      toast(error instanceof Error ? error.message : "Nahranie súboru zlyhalo", "error");
     } finally {
       setIsUploading(false);
     }
@@ -104,16 +100,6 @@ export default function SimpleUploadPage() {
           </div>
         )}
 
-        {uploadStatus.type && (
-          <div className="px-4 pb-4">
-            <Alert variant={uploadStatus.type === "error" ? "destructive" : "default"}
-              className={uploadStatus.type === "success" ? "border-green-500 bg-green-50" : ""}>
-              {uploadStatus.type === "error" ? <AlertCircle className="h-4 w-4" /> : <CheckCircle className="h-4 w-4 text-green-600" />}
-              <AlertTitle>{uploadStatus.type === "error" ? "Chyba" : "Úspech"}</AlertTitle>
-              <AlertDescription className="break-words">{uploadStatus.message}</AlertDescription>
-            </Alert>
-          </div>
-        )}
       </Card>
     </div>
   );
