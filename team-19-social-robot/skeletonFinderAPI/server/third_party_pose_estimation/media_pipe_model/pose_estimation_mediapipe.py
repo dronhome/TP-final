@@ -70,10 +70,11 @@ def evaluate_pose_from_video_mediapipe(source: str, min_detection_confidence: fl
     fps_list = []  # list to store fps
 
     if isinstance(source, bytes):
-        tfile = tempfile.NamedTemporaryFile(delete=True)
+        tfile = tempfile.NamedTemporaryFile(delete=False)
         tfile.write(source)
-        cap = cv2.VideoCapture(tfile.name)
+        tfile.flush()
         tfile.close()
+        cap = cv2.VideoCapture(tfile.name)
     elif source.isnumeric():
         cap = cv2.VideoCapture(int(source))  # pass video to videocapture object
     else:
