@@ -87,7 +87,7 @@ def process_video_bytes(
             "attach_visualization": "true" if attach_visualization else "false",
         },
         data=encoded_video,
-        timeout=60,
+        timeout=600,
     )
     resp.raise_for_status()
     frames = resp.json()
