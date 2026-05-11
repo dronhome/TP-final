@@ -3,9 +3,10 @@ kind: Service
 metadata:
   name: team19-web
 spec:
-  type: LoadBalancer 
+  type: NodePort
   selector:
-    app: web
+    app: team19-web
   ports:
     - port: 3000
       targetPort: 3000
+      nodePort: 30002
