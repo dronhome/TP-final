@@ -9,7 +9,7 @@ WORKDIR /app
 COPY . /app
 
 # Install Python dependencies
-RUN pip install --no-cache-dir flask requests
+RUN pip install --no-cache-dir flask requests numpy
 
 # Expose API port
 EXPOSE 7000

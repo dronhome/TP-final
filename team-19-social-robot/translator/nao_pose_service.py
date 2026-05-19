@@ -17,6 +17,7 @@ from flask import Flask, request, jsonify
 import requests
 
 from arms_translator import translate_arms
+from legs_translator import translate_legs_with_transition, merge_with_arm_angles, _has_leg_landmarks
 from video_pose_processor import process_video_bytes
 
 # =========================
@@ -454,17 +455,22 @@ def exercise_from_video():
         summary["valid_image_paths"] = summary["valid_image_paths"][:max_frames]
         summary["valid_frames"]      = len(summary["valid_landmarks"])
 
-    # 2) Translate each frame landmarks → NAO angles
+    # 2) Translate each frame landmarks → NAO angles (arms + legs)
     frames = []
+    previous_pose = None
     for landmarks in summary["valid_landmarks"]:
         try:
-            result = translate_arms(landmarks)
+            arm_result = translate_arms(landmarks)
+            if _has_leg_landmarks(landmarks):
+                leg_steps = translate_legs_with_transition(landmarks, previous_pose=previous_pose)
+                previous_pose = leg_steps[-1]["pose"]
+                for step in leg_steps:
+                    merged = merge_with_arm_angles(arm_result["angles"], step)
+                    frames.append({"keypoints": landmarks, "nao_angles": merged})
+            else:
+                frames.append({"keypoints": landmarks, "nao_angles": arm_result["angles"]})
         except Exception as e:
             return jsonify({"error": "failed to translate landmarks", "detail": str(e)}), 500
-        frames.append({
-            "keypoints": landmarks,
-            "nao_angles": result["angles"],
-        })
 
     # 3) Save exercise in exerciseconfigservice
     try:
