@@ -576,10 +576,16 @@ def arms_from_video():
 
     # 2) For each valid frame, translate landmarks -> NAO angles and send to NAO
     nao_results = []
+    previous_pose = None
     for idx, landmarks in enumerate(summary["valid_landmarks"]):
         try:
-            result = translate_arms(landmarks)
-            angles = result["angles"]
+            arm_result = translate_arms(landmarks)
+            if _has_leg_landmarks(landmarks):
+                leg_steps = translate_legs_with_transition(landmarks, previous_pose=previous_pose)
+                previous_pose = leg_steps[-1]["pose"]
+                poses_to_send = [merge_with_arm_angles(arm_result["angles"], step) for step in leg_steps]
+            else:
+                poses_to_send = [arm_result["angles"]]
         except Exception as e:
             return jsonify({
                 "error": "failed to translate landmarks to NAO angles for a frame",
@@ -588,20 +594,19 @@ def arms_from_video():
             }), 500
 
         # Send to NAO
-        try:
-            nao_response = call_nao_set_pose(angles)
-        except requests.RequestException as e:
-            return jsonify({
-                "error": "failed to send pose to NAO for a frame",
-                "detail": str(e),
-                "frame_index_in_valid_list": idx,
-            }), 502
-
-        # Collect a minimal per-frame summary (avoid huge payload)
-        nao_results.append({
-            "frame_valid_index": idx,
-            "nao_response": nao_response,
-        })
+        for angles in poses_to_send:
+            try:
+                nao_response = call_nao_set_pose(angles)
+            except requests.RequestException as e:
+                return jsonify({
+                    "error": "failed to send pose to NAO for a frame",
+                    "detail": str(e),
+                    "frame_index_in_valid_list": idx,
+                }), 502
+            nao_results.append({
+                "frame_valid_index": idx,
+                "nao_response": nao_response,
+            })
 
     # 3) Final summary
     return jsonify({
