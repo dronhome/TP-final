@@ -72,6 +72,12 @@ const WINTER_EPICS = [
     "Deployment & Project Presentation",
 ];
 
+const SUMMER_EPICS = [
+    "Review & Polish Current Implementation",
+    "Frontend & Backend Adjustments",
+    "Deployment & Presentation",
+];
+
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function jump(id: string) {
@@ -254,15 +260,15 @@ export default function Home() {
                                     Letné epiky
                                 </p>
                                 <div className="space-y-3">
-                                    {[0, 1, 2].map((i) => (
+                                    {SUMMER_EPICS.map((item, i) => (
                                         <div
                                             key={i}
-                                            className="flex items-start gap-4 p-4 rounded-xl bg-white/50 border border-[#ede9fe] border-dashed"
+                                            className="flex items-start gap-4 p-4 rounded-xl bg-white border border-[#ede9fe] shadow-sm hover:shadow-md hover:border-[rgba(124,58,237,0.3)] hover:-translate-y-px transition-all duration-200"
                                         >
-                                            <span className="flex-shrink-0 h-7 w-7 rounded-full bg-[#ede9fe] text-[#a78bfa] text-xs font-bold flex items-center justify-center">
+                                            <span className="flex-shrink-0 h-7 w-7 rounded-full bg-gradient-to-br from-[#7c3aed] to-[#4f46e5] text-white text-xs font-bold flex items-center justify-center shadow-md shadow-[rgba(124,58,237,0.3)]">
                                                 {i + 1}
                                             </span>
-                                            <span className="pt-0.5 text-sm text-[#a78bfa] italic">Čoskoro...</span>
+                                            <span className="pt-0.5 text-sm font-medium text-[#0f0e1a]">{item}</span>
                                         </div>
                                     ))}
                                 </div>
